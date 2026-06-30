@@ -1,79 +1,144 @@
-import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
+import { NextResponse } from 'next/server';
 
-const SYSTEM_PROMPT = `You are Allos, a Scripture-guided Christian encouragement assistant. Help users reflect on their current season through biblical wisdom, prayer, meditation, and encouragement. Keep the tone warm, reverent, emotionally aware, and Scripture-first. Always cite 2-4 real Scripture references clearly (book, chapter, verse). Do not invent Bible verses. Do not claim direct divine speech, prophecy, diagnosis, or guaranteed outcomes. Do not say "God told me" or speak as God. Do not provide medical, legal, financial, or licensed counseling advice. Encourage users to seek trusted pastoral, professional, or emergency help for serious issues. If the user mentions self-harm, abuse, violence, immediate danger, or crisis, stop ordinary devotional generation and prioritize safety by providing crisis resources (988 in the US). Use World English Bible or KJV translations for any quoted Scripture. Return your response as a JSON object with these exact fields: title (string), scriptureReferences (array of strings like ["John 3:16", "Psalm 23:1"]), body (string with the main content using \\n for line breaks), reflection (string, optional), prayer (string, optional), declaration (string, optional), nextStep (string, optional). Return ONLY valid JSON, no markdown, no extra text.`;
+const client = () => new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-const CRISIS_KEYWORDS = ['suicide', 'kill myself', 'self-harm', 'self harm', 'hurt myself', 'end my life', 'want to die', 'abuse', 'violence', 'emergency'];
+// Crisis keywords — always intercept before generation
+const CRISIS_KEYWORDS = [
+  'suicide', 'kill myself', 'end my life', 'self-harm', 'self harm', 'hurt myself',
+  'want to die', 'don\'t want to live', 'abuse', 'being abused', 'emergency',
+];
 
-function detectCrisis(text: string): boolean {
+function hasCrisis(text: string): boolean {
   const lower = text.toLowerCase();
   return CRISIS_KEYWORDS.some(k => lower.includes(k));
 }
 
-const CRISIS_RESPONSE = {
-  title: 'You Are Not Alone',
-  scriptureReferences: ['Psalm 34:18', 'Matthew 11:28'],
-  body: 'What you are carrying sounds very heavy, and I want you to know that you matter deeply. Before anything else, please reach out for immediate support.',
-  prayer: 'Lord, be close to this heart right now. You are near to the brokenhearted. Bring help, bring peace, bring hope.',
-  nextStep: 'Please contact the 988 Suicide and Crisis Lifeline by calling or texting 988 (US). If you are in immediate danger, call 911 or your local emergency number. Please also reach out to a trusted person — a pastor, counselor, or friend — right now.'
+// Map tone to pastoral instruction
+const TONE_INSTRUCTION: Record<string, string> = {
+  gentle: 'Speak with great tenderness and gentleness, as a loving parent to a hurting child. Soft, warm, compassionate.',
+  pastoral: 'Speak as a wise, experienced pastor who knows Scripture deeply and cares for this person\'s soul. Grounded, caring, ministerial.',
+  bold: 'Speak with holy boldness and conviction — strong, direct, Spirit-filled courage. Challenge and strengthen the reader.',
+  reflective: 'Speak slowly and contemplatively, like a spiritual director guiding someone into stillness. Meditative, unhurried, deep.',
+  prophetic: 'Speak with prophetic weight and holy urgency — Scripture as a living word over this person\'s season. Speak to their future, not just their present. Declare what God says about this moment.',
 };
 
-export async function POST(request: NextRequest) {
+// Map output type to format instruction
+const FORMAT_INSTRUCTION: Record<string, string> = {
+  sermonette: 'Write a short, focused mini-sermon (3–4 paragraphs). Open with the Scripture, unpack its meaning for this person\'s specific situation, then close with a word of encouragement.',
+  scripture_exhortation: 'Provide 3–5 carefully chosen Scripture passages with brief, personal application for each — directly speaking to the person\'s stated season. Each Scripture should feel hand-picked, not generic.',
+  prayer: 'Write a personal, heartfelt prayer in first person ("Lord, I come to you...") that specifically names the person\'s mood, struggle, life challenge, and spiritual need. It should feel written for them alone.',
+  meditation: 'Write a slow, contemplative meditation on one key Scripture passage. Guide the reader to sit with the text, notice what it says, and let it speak to their current season. 3–4 gentle paragraphs.',
+  declaration: 'Write 5–8 bold, Scripture-based declarations in first person ("I declare that...") that directly counter the mood, struggle, and life challenge the person shared. Each declaration should feel like a sword of the Spirit.',
+  song_poem: 'Write a short, original devotional poem or lyrical piece (3–4 stanzas) inspired by Scripture, that speaks directly to the emotional and spiritual season the person described.',
+};
+
+// Map length to word count instruction
+const LENGTH_INSTRUCTION: Record<string, string> = {
+  short: 'Keep it concise and focused — approximately 150–200 words total.',
+  medium: 'Write a full, satisfying response — approximately 300–400 words.',
+  deep: 'Go deep and thorough — approximately 500–700 words. Do not rush. Let the Scripture breathe.',
+};
+
+export async function POST(request: Request) {
   try {
-    const { season, outputType, tone, length } = await request.json();
+    const body = await request.json();
 
-    const allText = [
-      ...(season.moods || []),
-      ...(season.struggles || []),
-      ...(season.challenges || []),
-      ...(season.spiritualNeeds || []),
-      season.customInput || ''
-    ].join(' ');
+    const {
+      mood = '',
+      struggle = '',
+      lifeChallenge = '',
+      spiritualNeed = '',
+      outputType = 'sermonette',
+      tone = 'pastoral',
+      length = 'medium',
+      additionalContext = '',
+    } = body;
 
-    if (detectCrisis(allText)) {
-      return NextResponse.json(CRISIS_RESPONSE);
+    // Combine all free-text fields for crisis check
+    const allText = [mood, struggle, lifeChallenge, spiritualNeed, additionalContext].join(' ');
+    if (hasCrisis(allText)) {
+      return NextResponse.json({
+        content: `Before we continue, your words matter and so do you.
+
+If you are in crisis, experiencing thoughts of self-harm or suicide, or in an emergency situation — please reach out now:
+
+**988 Suicide & Crisis Lifeline:** Call or text 988 (US)
+**Crisis Text Line:** Text HOME to 741741
+**Emergency Services:** Call 911
+
+You are not alone. There is help, and there is hope.
+
+"He heals the brokenhearted and binds up their wounds." — Psalm 147:3`,
+        isCrisis: true,
+      });
     }
 
-    const lengthGuide = length === 'short' ? '150-250 words' : length === 'medium' ? '300-450 words' : '500-700 words';
-    const toneGuide = tone === 'gentle' ? 'warm, gentle, and compassionate' : tone === 'pastoral' ? 'pastoral, caring, and instructive' : tone === 'bold' ? 'bold, direct, and encouraging' : 'reflective, contemplative, and quiet';
+    // Build the user's season summary for the opening
+    const seasonParts: string[] = [];
+    if (mood) seasonParts.push(`feeling ${mood.toLowerCase()}`);
+    if (struggle) seasonParts.push(`wrestling with ${struggle.toLowerCase()}`);
+    if (lifeChallenge) seasonParts.push(`navigating ${lifeChallenge.toLowerCase()}`);
+    if (spiritualNeed) seasonParts.push(`seeking ${spiritualNeed.toLowerCase()}`);
+    const seasonSummary = seasonParts.length > 0
+      ? seasonParts.join(', ')
+      : 'their current season';
 
-    const userPrompt = `The user is in this season:
-- Moods: \${season.moods?.join(', ') || 'none specified'}
-- Struggles: \${season.struggles?.join(', ') || 'none specified'}
-- Life challenges: \${season.challenges?.join(', ') || 'none specified'}
-- Spiritual needs: \${season.spiritualNeeds?.join(', ') || 'none specified'}
-- Their own words: \${season.customInput || 'none'}
+    const toneInstruction = TONE_INSTRUCTION[tone.toLowerCase()] || TONE_INSTRUCTION.pastoral;
+    const formatInstruction = FORMAT_INSTRUCTION[outputType.toLowerCase().replace(/[^a-z_]/g, '_')] || FORMAT_INSTRUCTION.sermonette;
+    const lengthInstruction = LENGTH_INSTRUCTION[length.toLowerCase()] || LENGTH_INSTRUCTION.medium;
 
-Please write a \${outputType} in a \${toneGuide} tone. Length: \${lengthGuide}.
+    const systemPrompt = `You are Allos — a Scripture-grounded devotional companion. You are NOT an AI chatbot, NOT an AI pastor, and NOT a prophet. You are a faithful servant of the Word who holds Scripture out to people and lets God speak through it.
 
-Output type instructions:
-- sermonette: title, key scriptures, opening encouragement, biblical insight, application, short prayer, one reflection question
-- exhortation: title, scriptures, direct encouragement, practical next step, closing blessing
-- prayer: scriptures, guided prayer, optional breath prayer, one next step
-- meditation: scriptures, slow devotional reflection, three reflection prompts, short prayer
-- declaration: scriptures, 5-7 first-person declarations in biblical language, closing prayer
-- song: scriptures, original worshipful poem or song-like text, keep it reverent and simple
+ABSOLUTE RULES — never break these:
+- Never invent, paraphrase, or misquote Bible verses. Only use real, verifiable Scripture from the World English Bible (WEB) or KJV.
+- Never claim to speak as God, never say "God told me" or "thus says the Lord" as direct prophecy.
+- Never diagnose mental health conditions, give medical/legal/financial advice, or make guaranteed promises.
+- Never shame the user. Never project emotions they have not expressed.
+- If the user is in crisis, do not generate devotional content — escalate to 988.
+- Always cite Scripture with book, chapter, and verse (e.g., John 14:16 WEB).
 
-Return ONLY valid JSON.`;
+TONE: ${toneInstruction}
+FORMAT: ${formatInstruction}
+LENGTH: ${lengthInstruction}
 
-    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+CRITICAL — INPUT REFLECTION:
+The very first thing you must do is write a brief, warm 1–2 sentence acknowledgement that shows you have heard and understood the person's specific season. Name their exact inputs back to them naturally (mood, struggle, life challenge, spiritual need). This opening should feel like a trusted friend saying "I hear you — here is what Scripture says for exactly this moment." Then proceed into the ${outputType} itself.
 
-    const message = await client.messages.create({
+Do not write generic encouragement. Every sentence should be directly tied to the specific inputs provided. A reader should be able to see themselves clearly in what you write.`;
+
+    const userPrompt = `Please create a ${outputType} for someone who is ${seasonSummary}.
+
+Their specific inputs:
+- Mood/Emotion: ${mood || 'not specified'}
+- Struggle/Sin: ${struggle || 'not specified'}
+- Life Challenge: ${lifeChallenge || 'not specified'}
+- Spiritual Need: ${spiritualNeed || 'not specified'}
+- Output type requested: ${outputType}
+- Tone requested: ${tone}
+- Depth requested: ${length}
+${additionalContext ? `- Additional context they shared: "${additionalContext}"` : ''}
+
+Remember: Open with a warm 1–2 sentence reflection that names their season specifically. Then deliver the ${outputType} with Scripture woven throughout, directly tied to their inputs.`;
+
+    const anthropic = client();
+    const response = await anthropic.messages.create({
       model: 'claude-opus-4-5',
       max_tokens: 1500,
-      system: SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: userPrompt }]
+      messages: [{ role: 'user', content: userPrompt }],
+      system: systemPrompt,
     });
 
-    const responseText = message.content[0].type === 'text' ? message.content[0].text : '';
-    
-    // Clean up any markdown code fences if present
-    const cleaned = responseText.replace(/^```json\n?/, '').replace(/\n?```$/, '').trim();
-    const parsed = JSON.parse(cleaned);
+    const content_text = response.content[0].type === 'text' ? response.content[0].text : '';
 
-    return NextResponse.json(parsed);
+    return NextResponse.json({
+      content: content_text,
+      isCrisis: false,
+      inputs: { mood, struggle, lifeChallenge, spiritualNeed, outputType, tone, length },
+    });
+
   } catch (error) {
     console.error('Generate error:', error);
-    return NextResponse.json({ error: 'Failed to generate response. Please try again.' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to generate response' }, { status: 500 });
   }
 }
