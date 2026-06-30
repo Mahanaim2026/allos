@@ -2,17 +2,39 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #f7f4ef;
-  --foreground: #1e2d4a;
+/* ─── Base reset ────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 body {
-  background-color: var(--background);
-  color: var(--foreground);
-  font-family: Georgia, Cambria, 'Times New Roman', serif;
+  background: #ffffff;
+  color: #1A2E4A;
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.6;
 }
 
-@layer utilities {
-  .text-balance { text-wrap: balance; }
+/* ─── Serif helper ──────────────────────────────────────── */
+.font-serif {
+  font-family: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+}
+
+/* ─── Smooth link transitions ───────────────────────────── */
+a { transition: color 0.15s ease, opacity 0.15s ease; }
+
+/* ─── Focus ring — accessible, brand-coloured ───────────── */
+:focus-visible {
+  outline: 2px solid #2E6DA4;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ─── Selection colour ──────────────────────────────────── */
+::selection {
+  background: #C8DFF0;
+  color: #1A2E4A;
 }
