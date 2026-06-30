@@ -1,40 +1,18 @@
+@import url('https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Hanken+Grotesk:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ─── Base reset ────────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; }
-
-html {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
+:root {
+  --deep: #1B3A57; --deep-900: #122A40; --slate: #2C5573;
+  --sky: #6E9CC4; --mist: #CFE0EE; --powder: #E8F0F7;
+  --white: #F6F9FB; --gold: #C8943F; --text: #54677A; --border: #DBE5EE;
 }
-
-body {
-  background: #ffffff;
-  color: #1A2E4A;
-  font-family: "Helvetica Neue", Arial, sans-serif;
-  line-height: 1.6;
-}
-
-/* ─── Serif helper ──────────────────────────────────────── */
-.font-serif {
-  font-family: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
-}
-
-/* ─── Smooth link transitions ───────────────────────────── */
-a { transition: color 0.15s ease, opacity 0.15s ease; }
-
-/* ─── Focus ring — accessible, brand-coloured ───────────── */
-:focus-visible {
-  outline: 2px solid #2E6DA4;
-  outline-offset: 3px;
-  border-radius: 4px;
-}
-
-/* ─── Selection colour ──────────────────────────────────── */
-::selection {
-  background: #C8DFF0;
-  color: #1A2E4A;
-}
+* { box-sizing: border-box; }
+html { font-family: 'Hanken Grotesk', system-ui, sans-serif; background: #F6F9FB; color: #1B3A57; -webkit-font-smoothing: antialiased; }
+body { margin: 0; min-height: 100vh; }
+::selection { background: #6E9CC4; color: #fff; }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #E8F0F7; }
+::-webkit-scrollbar-thumb { background: #DBE5EE; border-radius: 3px; }
