@@ -3,140 +3,99 @@ import AllosLogo from '@/components/AllosLogo';
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-white flex flex-col">
+    <div style={{ fontFamily: "'Hanken Grotesk', system-ui, sans-serif", background: '#F6F9FB', color: '#1B3A57', minHeight: '100vh' }}>
 
-      {/* ── Nav ─────────────────────────────────────────────── */}
-      <nav className="w-full px-6 pt-7 pb-4 flex items-center justify-between max-w-2xl mx-auto">
-        <AllosLogo size="sm" variant="full" />
-        <Link href="/auth/login" className="text-sm font-medium text-allos-blue hover:text-allos-navy transition-colors">
-          Sign in
-        </Link>
+      {/* NAV */}
+      <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 32px', borderBottom: '1px solid #DBE5EE', background: '#F6F9FB', position: 'sticky', top: 0, zIndex: 50 }}>
+        <AllosLogo size={36} variant="light" showWordmark />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+          <Link href="/auth/login" style={{ color: '#54677A', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500 }}>Sign in</Link>
+          <Link href="/auth/signup" style={{ background: '#1B3A57', color: '#F6F9FB', padding: '10px 22px', borderRadius: '100px', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 600 }}>Begin a season</Link>
+        </div>
       </nav>
 
-      {/* ── Hero ────────────────────────────────────────────── */}
-      <section className="flex-1 flex flex-col items-center px-6 pt-8 pb-6 max-w-2xl mx-auto w-full">
-
-        <div className="mb-7">
-          <AllosLogo size="xl" variant="icon" />
-        </div>
-
-        {/* Primary headline — from original handoff vision */}
-        <h1 className="text-4xl font-serif font-medium text-allos-navy text-center leading-tight tracking-tight mb-3">
-          God&rsquo;s Word.<br />
-          <span className="text-allos-blue">Your Exact Season.</span>
-        </h1>
-
-        <p className="text-base text-slate-500 text-center leading-relaxed max-w-sm mb-3">
-          Allos is not an AI pastor, a chatbot, or a spiritual algorithm.<br />
-          It is a quiet place where Scripture meets<br />
-          the exact moment you are living right now.
-        </p>
-
-        <p className="text-sm text-allos-blue font-medium text-center mb-10 italic">
-          Tell Allos what season you are in. Receive something real.
-        </p>
-
-        {/* CTAs */}
-        <div className="flex flex-col gap-3 w-full max-w-xs mb-14">
-          <Link href="/app"
-            className="w-full bg-allos-navy text-white text-center py-4 px-6 rounded-2xl font-medium text-base tracking-wide hover:bg-allos-blue transition-colors shadow-sm">
-            Find My Scripture
-          </Link>
-          <Link href="/auth/signup"
-            className="w-full border border-allos-navy/20 text-allos-navy text-center py-3.5 px-6 rounded-2xl font-medium text-sm hover:bg-slate-50 transition-colors">
-            Create a free account
-          </Link>
-        </div>
-
-        {/* ── About: Allos Parakletos ──────────────────────── */}
-        <div className="w-full border-t border-slate-100 pt-12 pb-10">
-          <p className="text-xs font-semibold tracking-[0.2em] text-allos-blue uppercase text-center mb-8">
-            What is Allos?
+      {/* HERO */}
+      <section style={{ maxWidth: 1100, margin: '0 auto', padding: '80px 32px 64px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'center' }}>
+        <div>
+          <p style={{ fontFamily: "'Hanken Grotesk'", fontSize: '0.78rem', fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase', color: '#6E9CC4', marginBottom: 20, margin: '0 0 20px' }}>SCRIPTURE-GUIDED ENCOURAGEMENT</p>
+          <h1 style={{ fontFamily: "'Spectral', Georgia, serif", fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 300, lineHeight: 1.25, color: '#1B3A57', margin: '0 0 24px', maxWidth: 480 }}>
+            Bring your heart before the Word. Receive encouragement for the season you&apos;re walking through.
+          </h1>
+          <p style={{ color: '#54677A', fontSize: '1.05rem', lineHeight: 1.7, maxWidth: 420, margin: '0 0 36px' }}>
+            Allos is a Scripture-guided companion. Share your mood, struggle, or spiritual need — and receive Bible-grounded prayer, meditation, sermonette, or declaration.
           </p>
-
-          <div className="space-y-6 text-slate-600 text-sm leading-relaxed max-w-md mx-auto">
-            <p>
-              In John 14:16, Jesus made a promise:{' '}
-              <em className="text-allos-navy not-italic font-medium">
-                &ldquo;I will ask the Father, and he will give you another Comforter, that he may be with you forever.&rdquo;
-              </em>{' '}
-              The word He used was{' '}
-              <strong className="text-allos-navy font-semibold">allos</strong>{' '}
-              — Greek for <em>&ldquo;another of the same kind.&rdquo;</em> Another Paraclete. One called alongside to help.
-            </p>
-
-            <p>
-              That is the spirit this app is built in. Allos does not speak <em>for</em> God — it holds the Word <em>out</em> to you, faithfully and gently, so that the Spirit who lives in you can do what only He can do.
-            </p>
-
-            <p>
-              Whether you are{' '}
-              <span className="text-allos-navy font-medium">anxious at 2am</span>,{' '}
-              <span className="text-allos-navy font-medium">grieving a loss</span>,{' '}
-              <span className="text-allos-navy font-medium">waiting on a promise</span>, or{' '}
-              <span className="text-allos-navy font-medium">on the verge of breakthrough</span>{' '}
-              — there is a Scripture for this season. Let Allos find it for you.
-            </p>
+          <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+            <Link href="/auth/signup" style={{ background: '#1B3A57', color: '#F6F9FB', padding: '14px 28px', borderRadius: '100px', textDecoration: 'none', fontSize: '0.925rem', fontWeight: 600, display: 'inline-block' }}>Begin a season</Link>
+            <Link href="/app" style={{ border: '1px solid #DBE5EE', color: '#1B3A57', padding: '14px 28px', borderRadius: '100px', textDecoration: 'none', fontSize: '0.925rem', fontWeight: 500, display: 'inline-block' }}>Try as guest</Link>
           </div>
         </div>
 
-        {/* ── How it works ────────────────────────────────── */}
-        <div className="w-full mb-12">
-          <p className="text-xs font-semibold tracking-[0.2em] text-allos-blue uppercase text-center mb-8">
-            How it works
-          </p>
-          <div className="grid grid-cols-2 gap-3 max-w-md mx-auto">
-            {[
-              { n: '1', t: 'Share your season', d: 'Tell Allos your mood, struggle, life challenge, and spiritual need' },
-              { n: '2', t: 'Choose your format', d: 'Prayer, Sermonette, Declaration, Meditation, and more' },
-              { n: '3', t: 'Receive your Word', d: 'Scripture-grounded, personally addressed to your exact moment' },
-              { n: '4', t: 'Save your journey', d: 'Every entry saved, searchable, with space for your own reflection' },
-            ].map(({ n, t, d }) => (
-              <div key={n} className="bg-slate-50 rounded-2xl p-4">
-                <span className="inline-block w-6 h-6 rounded-full bg-allos-blue text-white text-xs font-bold text-center leading-6 mb-2">{n}</span>
-                <p className="text-allos-navy text-xs font-semibold mb-1">{t}</p>
-                <p className="text-slate-400 text-xs leading-snug">{d}</p>
-              </div>
-            ))}
+        {/* MARK DISPLAY */}
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <div style={{ background: '#1B3A57', borderRadius: '50%', width: 220, height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 24px 64px rgba(27,58,87,0.18)' }}>
+            <AllosLogo size={120} variant="dark" />
           </div>
         </div>
-
-        {/* ── Scripture quote ──────────────────────────────── */}
-        <blockquote className="w-full max-w-sm mx-auto border-l-2 border-allos-blue/30 pl-5 mb-14">
-          <p className="font-serif text-base text-allos-navy italic leading-relaxed">
-            &ldquo;Your word is a lamp to my feet,<br />and a light to my path.&rdquo;
-          </p>
-          <cite className="block mt-2 text-xs text-slate-400 not-italic tracking-wide">
-            Psalm 119:105 &mdash; World English Bible
-          </cite>
-        </blockquote>
-
-        {/* ── Safety note ─────────────────────────────────── */}
-        <div className="w-full max-w-sm mx-auto bg-slate-50 rounded-2xl p-4 mb-10 text-center">
-          <p className="text-xs text-slate-400 leading-relaxed">
-            <strong className="text-slate-500">Not a replacement for pastoral care.</strong><br />
-            If you are in crisis, Allos will always direct you to the 988 Lifeline first.
-          </p>
-        </div>
-
       </section>
 
-      {/* ── Footer ──────────────────────────────────────────── */}
-      <footer className="w-full border-t border-slate-100 px-6 py-8">
-        <div className="max-w-2xl mx-auto flex flex-col items-center gap-3 text-center">
-          <p className="text-xs text-slate-400 leading-relaxed">
-            Powered by{' '}
-            <a href="https://www.mahanaiminstitute.com" target="_blank" rel="noopener noreferrer"
-              className="text-allos-blue hover:underline font-medium">
-              Mahanaim Institute
-            </a>
+      {/* EYEBROW — THE NAME */}
+      <section style={{ background: '#E8F0F7', borderTop: '1px solid #DBE5EE', borderBottom: '1px solid #DBE5EE', padding: '56px 32px' }}>
+        <div style={{ maxWidth: 680, margin: '0 auto', textAlign: 'center' }}>
+          <p style={{ fontFamily: "'Hanken Grotesk'", fontSize: '0.78rem', fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase', color: '#6E9CC4', marginBottom: 16 }}>THE NAME</p>
+          <h2 style={{ fontFamily: "'Spectral', Georgia, serif", fontSize: 'clamp(22px, 2.8vw, 32px)', fontWeight: 300, color: '#1B3A57', margin: '0 0 20px', lineHeight: 1.3 }}>
+            Allos — Another Comforter
+          </h2>
+          <p style={{ color: '#54677A', fontSize: '1.05rem', lineHeight: 1.75, margin: 0 }}>
+            In John 14, Jesus promised <em>allos parakletos</em> — another Helper, another Comforter. The same Greek word He used to describe the Holy Spirit. Allos is built on that same promise: that you are not alone in your season, and that the Word of God speaks directly into where you are.
           </p>
-          <p className="text-xs text-slate-300">
-            &copy; {new Date().getFullYear()} Allos &nbsp;&middot;&nbsp; Scripture only, never counsel &nbsp;&middot;&nbsp; word2go.com
-          </p>
+          <div style={{ marginTop: 28, fontFamily: "'Spectral', Georgia, serif", fontSize: '1.2rem', fontStyle: 'italic', color: '#6E9CC4' }}>
+            &ldquo;I will not leave you as orphans; I will come to you.&rdquo;
+          </div>
+          <div style={{ marginTop: 8, fontSize: '0.78rem', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#6E9CC4' }}>John 14:18 &middot; WEB</div>
         </div>
-      </footer>
+      </section>
 
-    </main>
+      {/* HOW IT WORKS */}
+      <section style={{ maxWidth: 1100, margin: '0 auto', padding: '72px 32px' }}>
+        <p style={{ fontFamily: "'Hanken Grotesk'", fontSize: '0.78rem', fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase', color: '#6E9CC4', textAlign: 'center', marginBottom: 12 }}>HOW IT WORKS</p>
+        <h2 style={{ fontFamily: "'Spectral', Georgia, serif", fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 400, textAlign: 'center', color: '#1B3A57', margin: '0 0 48px' }}>Four steps. One season at a time.</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 24 }}>
+          {[
+            { n: '01', t: 'Name your season', d: 'Choose your mood, a struggle, a life challenge, or a spiritual need — whatever is most present right now.' },
+            { n: '02', t: 'Choose your format', d: 'Prayer, sermonette, meditation, declaration, exhortation, or a worshipful song or poem.' },
+            { n: '03', t: 'Receive the Word', d: 'Allos generates a Scripture-grounded response using real Bible passages — never invented verses.' },
+            { n: '04', t: 'Save to your Journey', d: 'Every response is saved to your personal Journey. Add reflections. Return to it. Grow.' },
+          ].map((s) => (
+            <div key={s.n} style={{ background: '#F6F9FB', border: '1px solid #DBE5EE', borderRadius: 16, padding: '28px 24px' }}>
+              <div style={{ fontSize: '0.78rem', fontWeight: 700, letterSpacing: '0.28em', color: '#C8943F', marginBottom: 12, textTransform: 'uppercase' }}>{s.n}</div>
+              <div style={{ fontFamily: "'Spectral', Georgia, serif", fontSize: '1.15rem', fontWeight: 500, color: '#1B3A57', marginBottom: 10 }}>{s.t}</div>
+              <div style={{ color: '#54677A', fontSize: '0.9rem', lineHeight: 1.65 }}>{s.d}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* CTA STRIP */}
+      <section style={{ background: '#1B3A57', padding: '56px 32px', textAlign: 'center' }}>
+        <h2 style={{ fontFamily: "'Spectral', Georgia, serif", fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 300, color: '#F6F9FB', margin: '0 0 12px' }}>Your season is not wasted.</h2>
+        <p style={{ color: '#CFE0EE', fontSize: '1.05rem', marginBottom: 32, fontStyle: 'italic', fontFamily: "'Spectral', Georgia, serif" }}>The Word speaks into it.</p>
+        <Link href="/auth/signup" style={{ background: '#C8943F', color: '#fff', padding: '15px 32px', borderRadius: '100px', textDecoration: 'none', fontSize: '0.95rem', fontWeight: 600, display: 'inline-block' }}>Begin a season — it is free</Link>
+      </section>
+
+      {/* FOOTER */}
+      <footer style={{ background: '#122A40', color: '#CFE0EE', padding: '32px', textAlign: 'center', fontSize: '0.85rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 12 }}>
+          <AllosLogo size={24} variant="dark" />
+          <span style={{ fontFamily: "'Spectral', Georgia, serif", color: '#F6F9FB' }}>Allos</span>
+        </div>
+        <p style={{ margin: '0 0 6px', color: '#CFE0EE' }}>Scripture for the Season You&apos;re In</p>
+        <p style={{ margin: 0, fontSize: '0.8rem', color: '#6E9CC4' }}>
+          Powered by{' '}
+          <a href="https://www.mahanaiminstitute.com" target="_blank" rel="noopener noreferrer" style={{ color: '#6E9CC4', textDecoration: 'underline' }}>
+            Mahanaim Institute
+          </a>
+        </p>
+      </footer>
+    </div>
   );
 }
