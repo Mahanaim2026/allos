@@ -1,7 +1,24 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import type { JourneyEntry } from '@/types';
+import { useRouter } from 'next/navigation';
+import AllosLogo from '@/components/AllosLogo';
+import { createClient } from '@/lib/supabase/client';
+
+interface JourneyEntry {
+  id: string;
+  title: string;
+  content: string;
+  mood?: string;
+  struggle?: string;
+  life_challenge?: string;
+  spiritual_need?: string;
+  output_type?: string;
+  tone?: string;
+  notes?: string;
+  is_favourite?: boolean;
+  created_at: string;
+}
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
@@ -11,91 +28,135 @@ export default function JourneyPage() {
   const [entries, setEntries] = useState<JourneyEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [userName, setUserName] = useState('');
+  const router = useRouter();
+  const supabase = createClient();
 
   useEffect(() => {
-    async function fetchEntries() {
+    async function init() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.push('/auth/login');
+        return;
+      }
+      // Fetch display name
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('first_name')
+        .eq('id', user.id)
+        .single();
+      const name = profile?.first_name ||
+        user.user_metadata?.full_name?.split(' ')[0] ||
+        user.user_metadata?.name?.split(' ')[0] || '';
+      setUserName(name);
+
+      // Fetch journey entries
       try {
         const res = await fetch('/api/journey');
-        if (res.status === 401) {
-          setError('sign-in');
-          return;
-        }
+        if (!res.ok) { setError('Failed to load journey.'); setLoading(false); return; }
         const data = await res.json();
-        setEntries(data);
-      } catch (e) {
+        setEntries(data.entries || []);
+      } catch {
         setError('Failed to load your journey.');
       } finally {
         setLoading(false);
       }
     }
-    fetchEntries();
+    init();
   }, []);
 
-  async function toggleFavorite(entry: JourneyEntry) {
-    await fetch(`/api/journey/${entry.id}`, {
+  async function toggleFavourite(entry: JourneyEntry) {
+    const newVal = !entry.is_favourite;
+    setEntries(prev => prev.map(e => e.id === entry.id ? { ...e, is_favourite: newVal } : e));
+    await fetch('/api/journey/' + entry.id, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ favorite: !entry.favorite })
+      body: JSON.stringify({ is_favourite: newVal }),
     });
-    setEntries(prev => prev.map(e => e.id === entry.id ? { ...e, favorite: !e.favorite } : e));
+  }
+
+  async function handleSignOut() {
+    await supabase.auth.signOut();
+    router.push('/');
   }
 
   return (
-    <main className="min-h-screen bg-allos-cream">
-      <header className="flex items-center justify-between px-6 py-4 border-b border-allos-warm">
-        <Link href="/" className="text-xl font-serif font-bold text-allos-navy">Allos</Link>
-        <Link href="/app" className="text-sm text-allos-olive hover:text-allos-navy font-sans transition-colors">+ New</Link>
+    <main style={{ minHeight: '100vh', background: '#F6F9FB', fontFamily: "Hanken Grotesk, sans-serif" }}>
+      {/* Nav */}
+      <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 24px', borderBottom: '1px solid #DBE5EE', background: '#F6F9FB' }}>
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
+          <AllosLogo size={32} variant="light" />
+          <span style={{ fontFamily: "'Spectral', Georgia, serif", fontWeight: 500, fontSize: '1.1rem', color: '#1B3A57', letterSpacing: '-0.01em' }}>Allos</span>
+        </Link>
+        <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+          {userName && (
+            <span style={{ fontSize: '0.85rem', color: '#54677A', fontFamily: 'Hanken Grotesk, sans-serif' }}>
+              Welcome back, {userName}
+            </span>
+          )}
+          <Link href="/app" style={{ fontSize: '0.85rem', color: '#6E9CC4', textDecoration: 'none', fontWeight: 500 }}>+ New season</Link>
+          <button onClick={handleSignOut} style={{ fontSize: '0.8rem', color: '#54677A', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Hanken Grotesk, sans-serif' }}>Sign out</button>
+        </div>
       </header>
 
-      <div className="max-w-xl mx-auto px-6 py-10">
-        <h2 className="text-2xl font-serif font-bold text-allos-navy mb-2">Journey With the Word</h2>
-        <p className="text-allos-navy/60 text-sm font-sans mb-8">Your saved encounters with Scripture.</p>
+      <div style={{ maxWidth: 600, margin: '0 auto', padding: '40px 24px 80px' }}>
+        {/* Page heading */}
+        <div style={{ marginBottom: 32 }}>
+          <div style={{ fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase', color: '#6E9CC4', marginBottom: 8, fontFamily: 'Hanken Grotesk, sans-serif' }}>Your journey</div>
+          <h1 style={{ fontFamily: "'Spectral', Georgia, serif", fontWeight: 300, fontSize: 'clamp(26px,4vw,36px)', color: '#1B3A57', margin: 0, lineHeight: 1.2 }}>
+            Scripture for every season
+          </h1>
+          <p style={{ color: '#54677A', fontSize: '0.95rem', marginTop: 8, lineHeight: 1.6 }}>Your saved encounters with the Word.</p>
+        </div>
 
         {loading && (
-          <div className="text-center py-16 text-allos-navy/40 font-sans text-sm">Loading your journey...</div>
-        )}
-
-        {error === 'sign-in' && (
-          <div className="bg-white rounded-2xl border border-allos-warm p-8 text-center">
-            <p className="text-allos-navy font-serif text-lg mb-2">Sign in to save your journey</p>
-            <p className="text-allos-navy/60 font-sans text-sm mb-6">Create an account to save and revisit your Scripture encounters.</p>
-            <Link href="/auth/signup" className="bg-allos-navy text-allos-cream px-6 py-3 rounded-lg font-sans text-sm font-medium inline-block hover:bg-allos-navy/90 transition-colors">Create Account</Link>
-            <p className="mt-3 text-sm font-sans text-allos-navy/50">Already have one? <Link href="/auth/login" className="text-allos-olive hover:underline">Sign in</Link></p>
+          <div style={{ textAlign: 'center', padding: '60px 0', color: '#54677A', fontSize: '0.9rem' }}>
+            Loading your journey...
           </div>
         )}
 
-        {!loading && error !== 'sign-in' && entries.length === 0 && (
-          <div className="bg-white rounded-2xl border border-allos-warm p-8 text-center">
-            <p className="text-allos-navy font-serif text-lg mb-2">Your journey begins here</p>
-            <p className="text-allos-navy/60 font-sans text-sm mb-6">Bring your heart before the Word and save what speaks to you.</p>
-            <Link href="/app" className="bg-allos-navy text-allos-cream px-6 py-3 rounded-lg font-sans text-sm font-medium inline-block hover:bg-allos-navy/90 transition-colors">Begin</Link>
+        {!loading && error && (
+          <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #DBE5EE', padding: 32, textAlign: 'center' }}>
+            <p style={{ color: '#1B3A57', fontFamily: "'Spectral', Georgia, serif", fontSize: '1.1rem', marginBottom: 16 }}>{error}</p>
+            <Link href="/auth/login" style={{ display: 'inline-block', background: '#1B3A57', color: '#F6F9FB', borderRadius: 100, padding: '10px 24px', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 600, fontFamily: 'Hanken Grotesk, sans-serif' }}>Sign in</Link>
           </div>
         )}
 
-        {entries.length > 0 && (
-          <div className="flex flex-col gap-4">
+        {!loading && !error && entries.length === 0 && (
+          <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #DBE5EE', padding: 48, textAlign: 'center' }}>
+            <div style={{ fontSize: 40, marginBottom: 16 }}>✦</div>
+            <p style={{ fontFamily: "'Spectral', Georgia, serif", color: '#1B3A57', fontSize: '1.15rem', marginBottom: 8 }}>Your journey begins here</p>
+            <p style={{ color: '#54677A', fontSize: '0.9rem', marginBottom: 24, lineHeight: 1.6 }}>Save your first encounter with Scripture to see it here.</p>
+            <Link href="/app" style={{ display: 'inline-block', background: '#1B3A57', color: '#F6F9FB', borderRadius: 100, padding: '10px 24px', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 600, fontFamily: 'Hanken Grotesk, sans-serif' }}>Begin a season</Link>
+          </div>
+        )}
+
+        {!loading && !error && entries.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {entries.map(entry => (
-              <div key={entry.id} className="bg-white rounded-2xl border border-allos-warm p-5">
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <p className="text-xs font-sans text-allos-navy/40 mb-1">{formatDate(entry.created_at)}</p>
-                    <h3 className="font-serif font-bold text-allos-navy text-base leading-snug">{entry.title}</h3>
+              <div key={entry.id} style={{ background: '#fff', borderRadius: 16, border: '1px solid #DBE5EE', padding: '20px 24px', display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 6 }}>
+                    {entry.mood && <span style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6E9CC4', fontFamily: 'Hanken Grotesk, sans-serif' }}>{entry.mood}</span>}
+                    {entry.output_type && <span style={{ fontSize: '0.72rem', color: '#54677A', fontFamily: 'Hanken Grotesk, sans-serif' }}>· {entry.output_type}</span>}
                   </div>
-                  <button onClick={() => toggleFavorite(entry)} className={`text-lg transition-colors ${entry.favorite ? 'text-allos-gold' : 'text-allos-navy/20 hover:text-allos-gold'}`}>
-                    ✦
-                  </button>
+                  <Link href={'/entry/' + entry.id} style={{ textDecoration: 'none' }}>
+                    <h3 style={{ fontFamily: "'Spectral', Georgia, serif", fontSize: '1.05rem', fontWeight: 500, color: '#1B3A57', margin: '0 0 6px', lineHeight: 1.3 }}>{entry.title}</h3>
+                  </Link>
+                  <p style={{ fontSize: '0.82rem', color: '#54677A', margin: 0, fontFamily: 'Hanken Grotesk, sans-serif' }}>{formatDate(entry.created_at)}</p>
+                  {entry.notes && (
+                    <p style={{ fontSize: '0.85rem', color: '#2C5573', marginTop: 8, fontStyle: 'italic', lineHeight: 1.5, fontFamily: "'Spectral', Georgia, serif" }}>
+                      "{entry.notes.substring(0, 120)}{entry.notes.length > 120 ? '...' : ''}"
+                    </p>
+                  )}
                 </div>
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {entry.scripture_references?.map((ref, i) => (
-                    <span key={i} className="text-xs font-sans bg-allos-gold/10 text-allos-gold border border-allos-gold/20 px-2 py-0.5 rounded-full">{ref}</span>
-                  ))}
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {entry.mood && <span className="text-xs font-sans bg-allos-sky/20 text-allos-navy/60 px-2 py-0.5 rounded-full">{entry.mood}</span>}
-                  {entry.spiritual_need && <span className="text-xs font-sans bg-allos-olive/10 text-allos-olive px-2 py-0.5 rounded-full">{entry.spiritual_need}</span>}
-                  <span className="text-xs font-sans bg-allos-warm text-allos-navy/50 px-2 py-0.5 rounded-full capitalize">{entry.output_type}</span>
-                </div>
-                <Link href={`/entry/${entry.id}`} className="mt-3 text-xs font-sans text-allos-olive hover:text-allos-navy transition-colors block">Read entry →</Link>
+                <button
+                  onClick={() => toggleFavourite(entry)}
+                  title={entry.is_favourite ? 'Remove from favourites' : 'Add to favourites'}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: entry.is_favourite ? '#C8943F' : '#DBE5EE', flexShrink: 0, padding: '0 4px' }}
+                >
+                  {entry.is_favourite ? '★' : '☆'}
+                </button>
               </div>
             ))}
           </div>
