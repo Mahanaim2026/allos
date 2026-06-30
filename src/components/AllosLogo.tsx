@@ -1,147 +1,43 @@
 import React from 'react';
 
 interface AllosLogoProps {
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
-  variant?: 'full' | 'icon' | 'wordmark';
-  light?: boolean; // true = white version for dark backgrounds
+  size?: number;
+  variant?: 'light' | 'dark' | 'mono';
+  showWordmark?: boolean;
   className?: string;
 }
 
-const cfg = {
-  xs: { icon: 20, word: 13, tag: 0,  gap: 7  },
-  sm: { icon: 28, word: 16, tag: 0,  gap: 9  },
-  md: { icon: 36, word: 20, tag: 8,  gap: 11 },
-  lg: { icon: 48, word: 26, tag: 9,  gap: 14 },
-  xl: { icon: 64, word: 34, tag: 10, gap: 18 },
-};
+export default function AllosLogo({ size = 40, variant = 'light', showWordmark = false, className = '' }: AllosLogoProps) {
+  const ring = variant === 'dark' ? '#F6F9FB' : '#1B3A57';
+  const gold = '#C8943F';
 
-// The mark: a single upward breath-flame path — minimal, poignant, original
-// Represents the Paraclete (breath / spirit / advocate)
-function AllosMark({ px, light }: { px: number; light: boolean }) {
-  const navy   = light ? '#FFFFFF' : '#1A2E4A';
-  const blue   = light ? 'rgba(255,255,255,0.7)' : '#2E6DA4';
-  const accent = light ? 'rgba(255,255,255,0.45)' : '#5B9FD4';
-  const r = px / 2;
-
-  return (
-    <svg
-      width={px}
-      height={px}
-      viewBox="0 0 64 64"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden="true"
-    >
-      {/* Clean circle background */}
-      <circle cx="32" cy="32" r="32" fill={navy} />
-
-      {/* Breath-flame glyph — three ascending curves, like breath rising */}
-      {/* Left arc */}
-      <path
-        d="M22 46 C22 38 18 30 24 22"
-        stroke={accent}
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        fill="none"
-      />
-      {/* Centre arc — tallest, brightest */}
-      <path
-        d="M32 48 C32 36 26 26 32 16"
-        stroke="white"
-        strokeWidth="3"
-        strokeLinecap="round"
-        fill="none"
-      />
-      {/* Right arc */}
-      <path
-        d="M42 46 C42 38 46 30 40 22"
-        stroke={accent}
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        fill="none"
-      />
-
-      {/* Base line — grounding */}
-      <line x1="20" y1="50" x2="44" y2="50" stroke={blue} strokeWidth="1.5" strokeLinecap="round" />
+  const mark = (
+    <svg viewBox="0 0 120 120" width={size} height={size} fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Allos Hour of Hope mark">
+      <circle cx="60" cy="60" r="40" stroke={ring} strokeWidth="3"/>
+      <path d="M60 22 L60 32" stroke={ring} strokeWidth="4" strokeLinecap="round"/>
+      <path d="M60 88 L60 98" stroke={ring} strokeWidth="4" strokeLinecap="round"/>
+      <path d="M22 60 L32 60" stroke={ring} strokeWidth="4" strokeLinecap="round"/>
+      <path d="M88 60 L98 60" stroke={ring} strokeWidth="4" strokeLinecap="round"/>
+      <path d="M60 60 L44 38" stroke={gold} strokeWidth="5" strokeLinecap="round"/>
+      <path d="M60 60 L76 38" stroke={gold} strokeWidth="5" strokeLinecap="round"/>
+      <circle cx="60" cy="60" r="5" fill={gold}/>
     </svg>
   );
-}
 
-export default function AllosLogo({
-  size = 'md',
-  variant = 'full',
-  light = false,
-  className = '',
-}: AllosLogoProps) {
-  const { icon, word, tag, gap } = cfg[size];
-  const textColor   = light ? '#FFFFFF' : '#1A2E4A';
-  const tagColor    = light ? 'rgba(255,255,255,0.6)' : '#2E6DA4';
+  if (!showWordmark) return <span className={className}>{mark}</span>;
 
-  if (variant === 'icon') {
-    return (
-      <span className={className}>
-        <AllosMark px={icon} light={light} />
-      </span>
-    );
-  }
-
-  if (variant === 'wordmark') {
-    return (
-      <span className={`flex flex-col ${className}`}>
-        <span style={{
-          fontFamily: '"Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif',
-          fontSize: word,
-          fontWeight: 500,
-          color: textColor,
-          letterSpacing: '0.28em',
-          lineHeight: 1,
-        }}>
-          ALLOS
-        </span>
-        {tag > 0 && (
-          <span style={{
-            fontFamily: '"Helvetica Neue", Arial, sans-serif',
-            fontSize: tag,
-            color: tagColor,
-            letterSpacing: '0.18em',
-            lineHeight: 1,
-            marginTop: 4,
-            textTransform: 'uppercase' as const,
-          }}>
-            Scripture for the Season
-          </span>
-        )}
-      </span>
-    );
-  }
-
-  // Full: mark + wordmark side by side
   return (
-    <span className={`inline-flex items-center ${className}`} style={{ gap }}>
-      <AllosMark px={icon} light={light} />
-      <span className="flex flex-col">
-        <span style={{
-          fontFamily: '"Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif',
-          fontSize: word,
-          fontWeight: 500,
-          color: textColor,
-          letterSpacing: '0.28em',
-          lineHeight: 1,
-        }}>
-          ALLOS
-        </span>
-        {tag > 0 && (
-          <span style={{
-            fontFamily: '"Helvetica Neue", Arial, sans-serif',
-            fontSize: tag,
-            color: tagColor,
-            letterSpacing: '0.18em',
-            lineHeight: 1,
-            marginTop: 4,
-          }}>
-            Scripture for the Season
-          </span>
-        )}
+    <span className={"flex items-center gap-2 " + className}>
+      {mark}
+      <span style={{
+        fontFamily: "'Spectral', Georgia, serif",
+        fontSize: size * 0.6,
+        fontWeight: 400,
+        color: variant === 'dark' ? '#F6F9FB' : '#1B3A57',
+        letterSpacing: '-0.01em',
+        lineHeight: 1
+      }}>
+        Allos
       </span>
     </span>
   );
