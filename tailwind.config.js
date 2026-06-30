@@ -8,16 +8,24 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'allos-navy': '#1e2d4a',
-        'allos-olive': '#6b7c5e',
-        'allos-gold': '#c9a84c',
-        'allos-clay': '#b56b45',
-        'allos-sky': '#a8c4d4',
-        'allos-cream': '#f7f4ef',
-        'allos-warm': '#e8e0d4',
+        allos: {
+          // Core blues — peace, trust, depth
+          navy:    '#1A2E4A',   // deep authority
+          blue:    '#2E6DA4',   // primary brand blue
+          sky:     '#5B9FD4',   // lighter, breath
+          mist:    '#C8DFF0',   // soft backgrounds
+          // Warm accents — kept minimal
+          gold:    '#C9A84C',   // Scripture warmth
+          olive:   '#6B7E4A',   // life, growth
+          clay:    '#C4714A',   // human warmth
+          // Neutrals
+          sand:    '#F7F4EF',   // warm off-white bg
+          fog:     '#EEF2F7',   // cool off-white bg
+        },
       },
       fontFamily: {
-        serif: ['Georgia', 'Cambria', 'Times New Roman', 'serif'],
+        serif: ['"Palatino Linotype"', 'Palatino', '"Book Antiqua"', 'Georgia', 'serif'],
+        sans:  ['"Helvetica Neue"', 'Arial', 'sans-serif'],
       },
     },
   },
