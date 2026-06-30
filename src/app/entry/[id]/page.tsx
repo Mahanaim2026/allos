@@ -26,7 +26,7 @@ export default function EntryPage({ params }: { params: { id: string } }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(\`/api/journey/\${params.id}\`)
+    fetch('/api/journey/' + params.id)
       .then(r => r.json())
       .then(d => {
         setEntry(d.entry);
@@ -39,7 +39,7 @@ export default function EntryPage({ params }: { params: { id: string } }) {
   async function saveNotes() {
     if (!entry) return;
     setSaving(true); setSaved(false);
-    await fetch(\`/api/journey/\${entry.id}\`, {
+    await fetch('/api/journey/' + entry.id, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ notes }),
@@ -52,7 +52,7 @@ export default function EntryPage({ params }: { params: { id: string } }) {
     if (!entry) return;
     const newVal = !entry.is_favourite;
     setEntry({ ...entry, is_favourite: newVal });
-    await fetch(\`/api/journey/\${entry.id}\`, {
+    await fetch('/api/journey/' + entry.id, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ is_favourite: newVal }),
@@ -82,12 +82,9 @@ export default function EntryPage({ params }: { params: { id: string } }) {
       </nav>
 
       <main className="flex-1 px-6 py-4 max-w-lg mx-auto w-full">
-
-        {/* Entry header */}
         <div className="mb-6">
           <p className="text-xs text-slate-400 mb-1">{new Date(entry.created_at).toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' })}</p>
           <h1 className="text-xl font-serif font-medium text-allos-navy mb-3">{entry.title}</h1>
-          {/* Input summary chips */}
           <div className="flex flex-wrap gap-1.5">
             {entry.mood && <span className="bg-allos-mist text-allos-navy px-2.5 py-1 rounded-lg text-xs font-medium">{entry.mood}</span>}
             {entry.struggle && <span className="bg-allos-mist text-allos-navy px-2.5 py-1 rounded-lg text-xs font-medium">{entry.struggle}</span>}
@@ -98,7 +95,6 @@ export default function EntryPage({ params }: { params: { id: string } }) {
           </div>
         </div>
 
-        {/* Scripture content */}
         <div className="bg-allos-fog rounded-2xl p-5 mb-8">
           <p className="text-xs font-semibold tracking-wider text-allos-blue uppercase mb-4">Your Word</p>
           <div className="font-serif text-sm text-allos-navy leading-relaxed whitespace-pre-wrap">
@@ -106,7 +102,6 @@ export default function EntryPage({ params }: { params: { id: string } }) {
           </div>
         </div>
 
-        {/* Reflection / Notes */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-3">
             <p className="text-xs font-semibold tracking-wider text-slate-500 uppercase">My Reflection</p>
@@ -126,10 +121,9 @@ export default function EntryPage({ params }: { params: { id: string } }) {
           </button>
         </div>
 
-        {/* Navigation */}
         <div className="flex gap-3 border-t border-slate-100 pt-6">
           <Link href="/journey" className="flex-1 border border-slate-200 text-slate-500 py-3 rounded-2xl text-sm font-medium text-center hover:bg-slate-50 transition-colors">
-            ← Back to Journey
+            Back to Journey
           </Link>
           <Link href="/app" className="flex-1 bg-allos-navy text-white py-3 rounded-2xl text-sm font-medium text-center hover:bg-allos-blue transition-colors">
             New Scripture
