@@ -1,15 +1,14 @@
 'use client';
 import { useState } from 'react';
-import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+import Link from 'next/link';
 import AllosLogo from '@/components/AllosLogo';
 
-const DENOMINATIONS = ['Non-denominational','Baptist','Pentecostal / Charismatic','Methodist','Anglican / Episcopal','Presbyterian','Lutheran','Catholic','Orthodox','Reformed','Adventist','Other / Prefer not to say'];
-
-const GoogleIcon = () => (<svg width='18' height='18' viewBox='0 0 18 18' fill='none'><path d='M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908C16.658 14.013 17.64 11.706 17.64 9.2z' fill='#4285F4'/><path d='M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z' fill='#34A853'/><path d='M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z' fill='#FBBC05'/><path d='M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z' fill='#EA4335'/></svg>);
+const DENOMINATIONS = ['Non-denominational', 'Baptist', 'Pentecostal / Charismatic', 'Anglican / Episcopal', 'Methodist', 'Presbyterian / Reformed', 'Lutheran', 'Catholic', 'Orthodox', 'Adventist', 'Other'];
+const COUNTRIES = ['United States', 'United Kingdom', 'Nigeria', 'Ghana', 'South Africa', 'Kenya', 'Canada', 'Australia', 'Jamaica', 'Trinidad', 'India', 'Philippines', 'Other'];
 
 export default function SignupPage() {
-  const [step, setStep] = useState<'account' | 'profile'>('account');
+  const [step, setStep] = useState(1);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
@@ -17,68 +16,107 @@ export default function SignupPage() {
   const [denomination, setDenomination] = useState('');
   const [country, setCountry] = useState('');
   const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
   const supabase = createClient();
 
-  async function handleGoogleSignup() {
-    setGoogleLoading(true); setError('');
-    const { error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + '/auth/callback' } });
-    if (error) { setError(error.message); setGoogleLoading(false); }
-  }
+  const signUpGoogle = async () => {
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: 'https://www.word2go.com/auth/callback' } });
+    if (error) { setMessage(error.message); setLoading(false); }
+  };
 
-  async function handleAccountStep(e: React.FormEvent) {
+  const handleStep1 = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password.length < 8) { setError('Password must be at least 8 characters'); return; }
-    setStep('profile'); setError('');
-  }
+    if (password.length < 8) { setMessage('Password must be at least 8 characters.'); return; }
+    setStep(2);
+    setMessage('');
+  };
 
-  async function createAccount() {
-    setLoading(true); setError('');
-    const displayName = [firstName, lastName].filter(Boolean).join(' ') || email.split('@')[0];
-    const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: displayName, first_name: firstName, last_name: lastName }, emailRedirectTo: window.location.origin + '/auth/callback' } });
-    if (error) { setError(error.message); setLoading(false); return; }
-    if (data.user) { await supabase.from('profiles').upsert({ id: data.user.id, email, display_name: displayName, first_name: firstName, last_name: lastName, denomination, country }); }
-    window.location.href = '/journey';
-  }
+  const handleStep2 = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: 'https://www.word2go.com/auth/callback' } });
+    if (error) { setMessage(error.message); setLoading(false); return; }
+    if (data.user) {
+      await supabase.from('profiles').upsert({ id: data.user.id, first_name: firstName, last_name: lastName, denomination, country, updated_at: new Date().toISOString() });
+    }
+    setMessage('Account created! Check your email to verify, then sign in.');
+    setLoading(false);
+  };
+
+  const inputStyle: React.CSSProperties = { padding: '13px 16px', border: '1px solid #DBE5EE', borderRadius: 12, fontSize: '0.9rem', outline: 'none', color: '#1B3A57', background: '#F6F9FB', width: '100%', boxSizing: 'border-box' };
+  const selectStyle: React.CSSProperties = { ...inputStyle, appearance: 'auto' };
 
   return (
-    <div className='min-h-screen bg-white flex flex-col items-center justify-center px-6 py-10'>
-      <div className='w-full max-w-sm'>
-        <div className='flex justify-center mb-8'><AllosLogo size='md' variant='full' /></div>
-        {step === 'account' && (<>
-          <h1 className='text-2xl font-serif font-medium text-allos-navy text-center mb-1'>Begin your journey</h1>
-          <p className='text-sm text-slate-400 text-center mb-8'>Free account — your Scripture history, saved forever</p>
-          <button onClick={handleGoogleSignup} disabled={googleLoading} className='w-full flex items-center justify-center gap-3 border border-slate-200 text-slate-700 py-3.5 rounded-2xl font-medium text-sm hover:bg-slate-50 transition-colors mb-4 disabled:opacity-50'>
-            <GoogleIcon />{googleLoading ? 'Signing up...' : 'Continue with Google'}
-          </button>
-          <div className='flex items-center gap-3 mb-4'><div className='flex-1 h-px bg-slate-100' /><span className='text-xs text-slate-300'>or</span><div className='flex-1 h-px bg-slate-100' /></div>
-          <form onSubmit={handleAccountStep} className='space-y-3'>
-            <input type='email' value={email} onChange={e => setEmail(e.target.value)} required placeholder='Email address' className='w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-allos-blue' />
-            <input type='password' value={password} onChange={e => setPassword(e.target.value)} required placeholder='Password (8+ characters)' className='w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-allos-blue' />
-            {error && <p className='text-red-500 text-xs'>{error}</p>}
-            <button type='submit' className='w-full bg-allos-navy text-white py-3.5 rounded-2xl font-medium text-sm hover:bg-allos-blue transition-colors'>Continue</button>
-          </form>
-        </>)}
-        {step === 'profile' && (<>
-          <h1 className='text-2xl font-serif font-medium text-allos-navy text-center mb-1'>About you</h1>
-          <p className='text-sm text-slate-400 text-center mb-8'>All optional — helps personalise your journey</p>
-          <div className='space-y-3'>
-            <div className='flex gap-2'>
-              <input type='text' value={firstName} onChange={e => setFirstName(e.target.value)} placeholder='First name' className='flex-1 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-allos-blue' />
-              <input type='text' value={lastName} onChange={e => setLastName(e.target.value)} placeholder='Last name' className='flex-1 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-allos-blue' />
-            </div>
-            <select value={denomination} onChange={e => setDenomination(e.target.value)} className='w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-600 focus:outline-none focus:border-allos-blue bg-white'>
-              <option value=''>Church tradition (optional)</option>
-              {DENOMINATIONS.map(d => <option key={d} value={d}>{d}</option>)}
-            </select>
-            <input type='text' value={country} onChange={e => setCountry(e.target.value)} placeholder='Country (optional)' className='w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-allos-blue' />
-            {error && <p className='text-red-500 text-xs'>{error}</p>}
-            <button onClick={createAccount} disabled={loading} className='w-full bg-allos-navy text-white py-3.5 rounded-2xl font-medium text-sm hover:bg-allos-blue transition-colors disabled:opacity-50'>{loading ? 'Creating...' : 'Create my account'}</button>
-            <button type='button' onClick={createAccount} className='w-full text-slate-400 text-xs hover:underline'>Skip for now</button>
+    <div style={{ minHeight: '100vh', background: '#F6F9FB', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <div style={{ width: '100%', maxWidth: 440 }}>
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#1B3A57', borderRadius: '50%', width: 72, height: 72, marginBottom: 16 }}>
+            <AllosLogo size={44} variant="dark" />
           </div>
-        </>)}
-        <p className='text-center text-sm text-slate-400 mt-6'>Already have an account?{' '}<Link href='/auth/login' className='text-allos-blue font-medium hover:underline'>Sign in</Link></p>
+          <h1 style={{ fontFamily: "'Spectral', Georgia, serif", fontSize: '1.75rem', fontWeight: 400, color: '#1B3A57', margin: '0 0 6px' }}>
+            {step === 1 ? 'Begin your journey' : 'Tell us about yourself'}
+          </h1>
+          <p style={{ color: '#54677A', fontSize: '0.9rem', margin: 0 }}>
+            {step === 1 ? 'Step 1 of 2 — Create your account' : 'Step 2 of 2 — Your profile'}
+          </p>
+        </div>
+
+        <div style={{ background: '#fff', border: '1px solid #DBE5EE', borderRadius: 20, padding: '32px 28px', boxShadow: '0 4px 24px rgba(27,58,87,0.07)' }}>
+
+          {step === 1 && (
+            <>
+              <button onClick={signUpGoogle} disabled={loading}
+                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '13px 20px', border: '1px solid #DBE5EE', borderRadius: '100px', background: '#F6F9FB', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600, color: '#1B3A57', marginBottom: 20 }}>
+                <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                Sign up with Google
+              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+                <div style={{ flex: 1, height: 1, background: '#DBE5EE' }}/>
+                <span style={{ color: '#54677A', fontSize: '0.8rem' }}>or use email</span>
+                <div style={{ flex: 1, height: 1, background: '#DBE5EE' }}/>
+              </div>
+              <form onSubmit={handleStep1} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <input type="email" placeholder="Email address" value={email} onChange={e => setEmail(e.target.value)} required style={inputStyle} />
+                <input type="password" placeholder="Password (min. 8 characters)" value={password} onChange={e => setPassword(e.target.value)} required style={inputStyle} />
+                <button type="submit" style={{ padding: '13px', background: '#1B3A57', color: '#F6F9FB', border: 'none', borderRadius: '100px', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}>
+                  Continue
+                </button>
+              </form>
+            </>
+          )}
+
+          {step === 2 && (
+            <form onSubmit={handleStep2} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <input placeholder="First name" value={firstName} onChange={e => setFirstName(e.target.value)} style={inputStyle} />
+                <input placeholder="Last name" value={lastName} onChange={e => setLastName(e.target.value)} style={inputStyle} />
+              </div>
+              <select value={denomination} onChange={e => setDenomination(e.target.value)} style={selectStyle}>
+                <option value="">Church background (optional)</option>
+                {DENOMINATIONS.map(d => <option key={d} value={d}>{d}</option>)}
+              </select>
+              <select value={country} onChange={e => setCountry(e.target.value)} style={selectStyle}>
+                <option value="">Country (optional)</option>
+                {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+              <button type="submit" disabled={loading}
+                style={{ padding: '13px', background: '#1B3A57', color: '#F6F9FB', border: 'none', borderRadius: '100px', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}>
+                {loading ? 'Creating account...' : 'Create my account'}
+              </button>
+              <button type="button" onClick={() => setStep(1)} style={{ background: 'transparent', border: 'none', color: '#54677A', cursor: 'pointer', fontSize: '0.85rem' }}>
+                Back
+              </button>
+            </form>
+          )}
+
+          {message && <p style={{ marginTop: 14, fontSize: '0.85rem', color: '#C8943F', textAlign: 'center' }}>{message}</p>}
+        </div>
+
+        <p style={{ textAlign: 'center', marginTop: 20, color: '#54677A', fontSize: '0.85rem' }}>
+          Already have an account?{' '}
+          <Link href="/auth/login" style={{ color: '#6E9CC4', fontWeight: 600 }}>Sign in</Link>
+        </p>
       </div>
     </div>
   );
