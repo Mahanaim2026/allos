@@ -1,40 +1,47 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
-import type { SeasonInput, OutputType, Tone, Length, AllosResponse } from '@/types';
+import AllosLogo from '@/components/AllosLogo';
 
-const MOODS = ['Anxious','Sad','Weary','Angry','Lonely','Confused','Grateful','Hopeful'];
-const STRUGGLES = ['Fear','Resentment','Shame','Doubt','Unforgiveness','Lust','Impatience','Discouragement'];
-const CHALLENGES = ['Waiting','Childlessness','Marital conflict','Grief','Parenting','Finances','Betrayal','Unemployment'];
-const NEEDS = ['Comfort','Wisdom','Courage','Repentance','Hope','Peace','Direction','Strength'];
-const OUTPUT_TYPES: { value: OutputType; label: string; desc: string }[] = [
-  { value: 'sermonette', label: 'Sermonette', desc: 'A short sermon grounded in Scripture' },
-  { value: 'exhortation', label: 'Scripture Exhortation', desc: 'Direct encouragement from the Word' },
-  { value: "prayer", label: "Prayer", desc: "A guided prayer for your season" },
-  { value: "meditation", label: "Meditation", desc: "Slow reflection on God's Word" },
-  { value: 'declaration', label: 'Declaration', desc: 'Biblical declarations to speak aloud' },
-  { value: 'song', label: 'Song / Poem', desc: 'Worshipful verse for your heart' },
+const MOODS = ['Anxious', 'Sad', 'Weary', 'Angry', 'Lonely', 'Confused', 'Grateful', 'Hopeful'];
+const STRUGGLES = ['Fear', 'Resentment', 'Shame', 'Doubt', 'Unforgiveness', 'Lust', 'Impatience', 'Discouragement'];
+const LIFE_CHALLENGES = ['Waiting', 'Childlessness', 'Marital conflict', 'Grief', 'Parenting', 'Finances', 'Betrayal', 'Unemployment'];
+const SPIRITUAL_NEEDS = ['Comfort', 'Wisdom', 'Courage', 'Repentance', 'Hope', 'Peace', 'Direction', 'Strength'];
+
+const OUTPUT_TYPES = [
+  { value: 'sermonette', label: 'Sermonette', icon: '📖', desc: 'A short, focused mini-sermon' },
+  { value: 'scripture_exhortation', label: 'Scripture', icon: '✦', desc: 'Chosen verses with application' },
+  { value: 'prayer', label: 'Prayer', icon: '🙏', desc: 'A personal, heartfelt prayer' },
+  { value: 'meditation', label: 'Meditation', icon: '◎', desc: 'Slow contemplation on one passage' },
+  { value: 'declaration', label: 'Declaration', icon: '⚡', desc: 'Bold Scripture-based declarations' },
+  { value: 'song_poem', label: 'Poem/Song', icon: '♩', desc: 'A devotional lyrical piece' },
 ];
-const TONES: { value: Tone; label: string }[] = [
-  { value: 'gentle', label: 'Gentle' },
-  { value: 'pastoral', label: 'Pastoral' },
-  { value: 'bold', label: 'Bold' },
-  { value: 'reflective', label: 'Reflective' },
+
+const TONES = [
+  { value: 'gentle', label: 'Gentle', desc: 'Tender & compassionate' },
+  { value: 'pastoral', label: 'Pastoral', desc: 'Grounded & caring' },
+  { value: 'bold', label: 'Bold', desc: 'Strong & convicting' },
+  { value: 'reflective', label: 'Reflective', desc: 'Contemplative & still' },
+  { value: 'prophetic', label: 'Prophetic', desc: 'Declaring God\'s word over your season' },
 ];
-const LENGTHS: { value: Length; label: string }[] = [
-  { value: 'short', label: 'Short' },
-  { value: 'medium', label: 'Medium' },
-  { value: 'deep', label: 'Deep' },
+
+const LENGTHS = [
+  { value: 'short', label: 'Short', desc: '~150 words' },
+  { value: 'medium', label: 'Medium', desc: '~350 words' },
+  { value: 'deep', label: 'Deep', desc: '~600 words' },
 ];
+
+type Step = 'mood' | 'struggle' | 'life' | 'spirit' | 'format' | 'result';
 
 function Chip({ label, selected, onClick }: { label: string; selected: boolean; onClick: () => void }) {
   return (
     <button
+      type="button"
       onClick={onClick}
-      className={`px-4 py-2 rounded-full text-sm font-sans border transition-all ${
+      className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all border ${
         selected
-          ? 'bg-allos-navy text-allos-cream border-allos-navy'
-          : 'bg-white text-allos-navy border-allos-warm hover:border-allos-navy/40'
+          ? 'bg-allos-navy text-white border-allos-navy shadow-sm'
+          : 'bg-white text-allos-navy border-allos-navy/20 hover:border-allos-blue hover:bg-allos-mist/30'
       }`}
     >
       {label}
@@ -42,255 +49,262 @@ function Chip({ label, selected, onClick }: { label: string; selected: boolean; 
   );
 }
 
-type Step = 'season' | 'format' | 'response';
+function StepHeader({ step, total, title, subtitle }: { step: number; total: number; title: string; subtitle: string }) {
+  return (
+    <div className="mb-8">
+      <div className="flex items-center gap-2 mb-4">
+        {Array.from({ length: total }).map((_, i) => (
+          <div
+            key={i}
+            className={`h-1 rounded-full flex-1 transition-all ${i < step ? 'bg-allos-blue' : i === step - 1 ? 'bg-allos-blue' : 'bg-slate-200'}`}
+          />
+        ))}
+      </div>
+      <p className="text-xs font-semibold tracking-[0.18em] text-allos-blue uppercase mb-2">Step {step} of {total}</p>
+      <h2 className="text-2xl font-serif font-medium text-allos-navy mb-1">{title}</h2>
+      <p className="text-sm text-slate-500">{subtitle}</p>
+    </div>
+  );
+}
 
 export default function AppPage() {
-  const [step, setStep] = useState<Step>('season');
-  const [season, setSeason] = useState<SeasonInput>({ moods: [], struggles: [], challenges: [], spiritualNeeds: [], customInput: '' });
-  const [outputType, setOutputType] = useState<OutputType>('sermonette');
-  const [tone, setTone] = useState<Tone>('gentle');
-  const [length, setLength] = useState<Length>('medium');
-  const [response, setResponse] = useState<AllosResponse | null>(null);
+  const [step, setStep] = useState<Step>('mood');
+  const [mood, setMood] = useState('');
+  const [struggle, setStruggle] = useState('');
+  const [lifeChallenge, setLifeChallenge] = useState('');
+  const [spiritualNeed, setSpiritualNeed] = useState('');
+  const [outputType, setOutputType] = useState('sermonette');
+  const [tone, setTone] = useState('pastoral');
+  const [length, setLength] = useState('medium');
+  const [additionalContext, setAdditionalContext] = useState('');
+  const [result, setResult] = useState('');
+  const [isCrisis, setIsCrisis] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [saved, setSaved] = useState(false);
-  const [rating, setRating] = useState<'helpful' | 'not_helpful' | null>(null);
 
-  function toggleItem(arr: string[], item: string): string[] {
-    return arr.includes(item) ? arr.filter(i => i !== item) : [...arr, item];
-  }
+  const steps: Step[] = ['mood', 'struggle', 'life', 'spirit', 'format', 'result'];
+  const stepNum = steps.indexOf(step) + 1;
 
   async function generate() {
     setLoading(true);
     setError('');
-    setResponse(null);
-    setSaved(false);
-    setRating(null);
     try {
-      const res = await fetch('/api/generate', {
+      const resp = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ season, outputType, tone, length })
+        body: JSON.stringify({ mood, struggle, lifeChallenge, spiritualNeed, outputType, tone, length, additionalContext }),
       });
-      const data = await res.json();
+      const data = await resp.json();
       if (data.error) throw new Error(data.error);
-      setResponse(data);
-      setStep('response');
-    } catch (e: any) {
-      setError(e.message || 'Something went wrong. Please try again.');
+      setResult(data.content);
+      setIsCrisis(data.isCrisis || false);
+      setStep('result');
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
   }
 
-  async function saveToJourney() {
-    if (!response) return;
-    try {
-      const res = await fetch('/api/journey', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          mood: season.moods.join(', '),
-          struggle: season.struggles.join(', '),
-          challenge: season.challenges.join(', '),
-          spiritual_need: season.spiritualNeeds.join(', '),
-          custom_input: season.customInput,
-          output_type: outputType,
-          tone,
-          length,
-          title: response.title,
-          scripture_references: response.scriptureReferences,
-          generated_text: response.body,
-          helpful_rating: rating,
-        })
-      });
-      if (res.ok) setSaved(true);
-    } catch (e) {
-      console.error('Save error:', e);
-    }
+  function reset() {
+    setStep('mood'); setMood(''); setStruggle(''); setLifeChallenge('');
+    setSpiritualNeed(''); setResult(''); setIsCrisis(false); setError('');
+    setOutputType('sermonette'); setTone('pastoral'); setLength('medium'); setAdditionalContext('');
   }
 
   return (
-    <main className="min-h-screen bg-allos-cream">
-      <header className="flex items-center justify-between px-6 py-4 border-b border-allos-warm">
-        <Link href="/" className="text-xl font-serif font-bold text-allos-navy">Allos</Link>
-        <Link href="/journey" className="text-sm text-allos-olive hover:text-allos-navy font-sans transition-colors">Journey</Link>
-      </header>
+    <div className="min-h-screen bg-white flex flex-col">
+      <nav className="w-full px-6 pt-6 pb-3 flex items-center justify-between max-w-lg mx-auto">
+        <Link href="/"><AllosLogo size="sm" variant="full" /></Link>
+        <Link href="/journey" className="text-xs font-medium text-allos-blue hover:underline">My Journey</Link>
+      </nav>
 
-      <div className="max-w-xl mx-auto px-6 py-10">
+      <main className="flex-1 px-6 py-6 max-w-lg mx-auto w-full">
 
-        {/* Step: Season Input */}
-        {step === 'season' && (
+        {/* ── STEP 1: Mood ── */}
+        {step === 'mood' && (
           <div>
-            <h2 className="text-2xl font-serif font-bold text-allos-navy mb-2">What season are you in?</h2>
-            <p className="text-allos-navy/60 text-sm font-sans mb-8">Select what resonates. You can choose multiple or write your own.</p>
-
-            <ChipSection title="Mood" items={MOODS} selected={season.moods}
-              onToggle={(item) => setSeason(s => ({ ...s, moods: toggleItem(s.moods, item) }))} />
-            <ChipSection title="Struggle" items={STRUGGLES} selected={season.struggles}
-              onToggle={(item) => setSeason(s => ({ ...s, struggles: toggleItem(s.struggles, item) }))} />
-            <ChipSection title="Life Challenge" items={CHALLENGES} selected={season.challenges}
-              onToggle={(item) => setSeason(s => ({ ...s, challenges: toggleItem(s.challenges, item) }))} />
-            <ChipSection title="Spiritual Need" items={NEEDS} selected={season.spiritualNeeds}
-              onToggle={(item) => setSeason(s => ({ ...s, spiritualNeeds: toggleItem(s.spiritualNeeds, item) }))} />
-
-            <div className="mt-6">
-              <label className="block text-sm font-sans font-medium text-allos-navy mb-2">In your own words (optional)</label>
+            <StepHeader step={1} total={5} title="How are you feeling?" subtitle="Select the emotion that best describes your heart right now." />
+            <div className="flex flex-wrap gap-2.5 mb-8">
+              {MOODS.map(m => <Chip key={m} label={m} selected={mood === m} onClick={() => setMood(m)} />)}
+            </div>
+            <div className="mb-6">
+              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Anything else you want to share? (optional)</label>
               <textarea
-                value={season.customInput}
-                onChange={(e) => setSeason(s => ({ ...s, customInput: e.target.value }))}
-                placeholder="Describe what you're walking through..."
-                className="w-full border border-allos-warm rounded-lg p-4 text-sm font-sans bg-white text-allos-navy placeholder-allos-navy/30 focus:outline-none focus:border-allos-navy/40 resize-none"
+                value={additionalContext}
+                onChange={e => setAdditionalContext(e.target.value)}
+                placeholder="e.g. I've been waiting for a breakthrough for two years..."
                 rows={3}
+                className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-allos-navy placeholder:text-slate-300 focus:outline-none focus:border-allos-blue resize-none"
               />
             </div>
-
-            <button
-              onClick={() => setStep('format')}
-              disabled={season.moods.length === 0 && season.struggles.length === 0 && season.challenges.length === 0 && season.spiritualNeeds.length === 0 && !season.customInput}
-              className="mt-8 w-full bg-allos-navy text-allos-cream py-4 rounded-lg font-sans font-medium text-base disabled:opacity-40 hover:bg-allos-navy/90 transition-colors"
-            >
+            <button onClick={() => setStep('struggle')} disabled={!mood}
+              className="w-full bg-allos-navy text-white py-4 rounded-2xl font-medium disabled:opacity-40 hover:bg-allos-blue transition-colors">
               Continue →
             </button>
           </div>
         )}
 
-        {/* Step: Format */}
+        {/* ── STEP 2: Struggle ── */}
+        {step === 'struggle' && (
+          <div>
+            <StepHeader step={2} total={5} title="What are you wrestling with?" subtitle="Choose the spiritual struggle closest to what you're facing." />
+            <div className="flex flex-wrap gap-2.5 mb-8">
+              {STRUGGLES.map(s => <Chip key={s} label={s} selected={struggle === s} onClick={() => setStruggle(s)} />)}
+            </div>
+            <div className="flex gap-3">
+              <button onClick={() => setStep('mood')} className="flex-1 border border-slate-200 text-slate-500 py-4 rounded-2xl font-medium hover:bg-slate-50 transition-colors">← Back</button>
+              <button onClick={() => setStep('life')} disabled={!struggle}
+                className="flex-[2] bg-allos-navy text-white py-4 rounded-2xl font-medium disabled:opacity-40 hover:bg-allos-blue transition-colors">
+                Continue →
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── STEP 3: Life Challenge ── */}
+        {step === 'life' && (
+          <div>
+            <StepHeader step={3} total={5} title="What life challenge are you navigating?" subtitle="Select the area of life that weighs most on you right now." />
+            <div className="flex flex-wrap gap-2.5 mb-8">
+              {LIFE_CHALLENGES.map(l => <Chip key={l} label={l} selected={lifeChallenge === l} onClick={() => setLifeChallenge(l)} />)}
+            </div>
+            <div className="flex gap-3">
+              <button onClick={() => setStep('struggle')} className="flex-1 border border-slate-200 text-slate-500 py-4 rounded-2xl font-medium hover:bg-slate-50 transition-colors">← Back</button>
+              <button onClick={() => setStep('spirit')} disabled={!lifeChallenge}
+                className="flex-[2] bg-allos-navy text-white py-4 rounded-2xl font-medium disabled:opacity-40 hover:bg-allos-blue transition-colors">
+                Continue →
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── STEP 4: Spiritual Need ── */}
+        {step === 'spirit' && (
+          <div>
+            <StepHeader step={4} total={5} title="What does your spirit need?" subtitle="What are you asking God for in this season?" />
+            <div className="flex flex-wrap gap-2.5 mb-8">
+              {SPIRITUAL_NEEDS.map(n => <Chip key={n} label={n} selected={spiritualNeed === n} onClick={() => setSpiritualNeed(n)} />)}
+            </div>
+            <div className="flex gap-3">
+              <button onClick={() => setStep('life')} className="flex-1 border border-slate-200 text-slate-500 py-4 rounded-2xl font-medium hover:bg-slate-50 transition-colors">← Back</button>
+              <button onClick={() => setStep('format')} disabled={!spiritualNeed}
+                className="flex-[2] bg-allos-navy text-white py-4 rounded-2xl font-medium disabled:opacity-40 hover:bg-allos-blue transition-colors">
+                Continue →
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── STEP 5: Format ── */}
         {step === 'format' && (
           <div>
-            <button onClick={() => setStep('season')} className="text-sm text-allos-olive hover:text-allos-navy font-sans mb-6 block transition-colors">← Back</button>
-            <h2 className="text-2xl font-serif font-bold text-allos-navy mb-2">How would you like to receive the Word?</h2>
-            <p className="text-allos-navy/60 text-sm font-sans mb-8">Choose your format, tone, and depth.</p>
+            <StepHeader step={5} total={5} title="How do you want to receive this?" subtitle="Choose the format, tone, and depth that speaks to you." />
 
             <div className="mb-6">
-              <p className="text-sm font-sans font-medium text-allos-navy mb-3">Format</p>
-              <div className="grid grid-cols-1 gap-3">
-                {OUTPUT_TYPES.map(ot => (
-                  <button key={ot.value} onClick={() => setOutputType(ot.value)}
-                    className={`flex items-center justify-between p-4 rounded-lg border text-left transition-all ${outputType === ot.value ? 'border-allos-navy bg-allos-navy/5' : 'border-allos-warm bg-white hover:border-allos-navy/30'}`}
-                  >
-                    <div>
-                      <p className={`font-sans font-medium text-sm ${outputType === ot.value ? 'text-allos-navy' : 'text-allos-navy/80'}`}>{ot.label}</p>
-                      <p className="font-sans text-xs text-allos-navy/50 mt-0.5">{ot.desc}</p>
-                    </div>
-                    {outputType === ot.value && <span className="text-allos-gold text-lg">✦</span>}
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Format</p>
+              <div className="grid grid-cols-2 gap-2">
+                {OUTPUT_TYPES.map(o => (
+                  <button key={o.value} type="button" onClick={() => setOutputType(o.value)}
+                    className={`text-left p-3 rounded-xl border transition-all ${outputType === o.value ? 'border-allos-blue bg-allos-mist/40' : 'border-slate-200 hover:border-allos-blue/40'}`}>
+                    <span className="text-base mr-1">{o.icon}</span>
+                    <span className={`text-sm font-semibold ${outputType === o.value ? 'text-allos-navy' : 'text-slate-600'}`}>{o.label}</span>
+                    <p className="text-xs text-slate-400 mt-0.5">{o.desc}</p>
                   </button>
                 ))}
               </div>
             </div>
 
             <div className="mb-6">
-              <p className="text-sm font-sans font-medium text-allos-navy mb-3">Tone</p>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Tone</p>
               <div className="flex flex-wrap gap-2">
-                {TONES.map(t => <Chip key={t.value} label={t.label} selected={tone === t.value} onClick={() => setTone(t.value)} />)}
+                {TONES.map(t => (
+                  <button key={t.value} type="button" onClick={() => setTone(t.value)}
+                    className={`px-3 py-2 rounded-xl border text-sm transition-all ${tone === t.value ? 'bg-allos-navy text-white border-allos-navy' : 'border-slate-200 text-slate-600 hover:border-allos-blue'}`}>
+                    <span className="font-medium">{t.label}</span>
+                    <span className={`block text-xs mt-0 ${tone === t.value ? 'text-white/70' : 'text-slate-400'}`}>{t.desc}</span>
+                  </button>
+                ))}
               </div>
             </div>
 
             <div className="mb-8">
-              <p className="text-sm font-sans font-medium text-allos-navy mb-3">Depth</p>
-              <div className="flex flex-wrap gap-2">
-                {LENGTHS.map(l => <Chip key={l.value} label={l.label} selected={length === l.value} onClick={() => setLength(l.value)} />)}
-              </div>
-            </div>
-
-            {error && <p className="text-red-600 text-sm font-sans mb-4">{error}</p>}
-
-            <button onClick={generate} disabled={loading}
-              className="w-full bg-allos-navy text-allos-cream py-4 rounded-lg font-sans font-medium text-base disabled:opacity-60 hover:bg-allos-navy/90 transition-colors"
-            >
-              {loading ? 'Receiving the Word...' : 'Receive the Word'}
-            </button>
-          </div>
-        )}
-
-        {/* Step: Response */}
-        {step === 'response' && response && (
-          <div>
-            <button onClick={() => setStep('format')} className="text-sm text-allos-olive hover:text-allos-navy font-sans mb-6 block transition-colors">← Back</button>
-
-            <div className="bg-white rounded-2xl border border-allos-warm p-6 mb-6">
-              <h2 className="text-xl font-serif font-bold text-allos-navy mb-3">{response.title}</h2>
-              <div className="flex flex-wrap gap-2 mb-5">
-                {response.scriptureReferences?.map((ref, i) => (
-                  <span key={i} className="text-xs font-sans bg-allos-gold/10 text-allos-gold border border-allos-gold/20 px-3 py-1 rounded-full">{ref}</span>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Depth</p>
+              <div className="flex gap-2">
+                {LENGTHS.map(l => (
+                  <button key={l.value} type="button" onClick={() => setLength(l.value)}
+                    className={`flex-1 py-3 rounded-xl border text-sm font-medium transition-all ${length === l.value ? 'bg-allos-navy text-white border-allos-navy' : 'border-slate-200 text-slate-600 hover:border-allos-blue'}`}>
+                    {l.label}
+                    <span className={`block text-xs mt-0.5 ${length === l.value ? 'text-white/70' : 'text-slate-400'}`}>{l.desc}</span>
+                  </button>
                 ))}
               </div>
-              <div className="prose prose-sm max-w-none">
-                <p className="text-allos-navy/80 font-sans text-sm leading-relaxed whitespace-pre-wrap">{response.body}</p>
-                {response.reflection && (
-                  <div className="mt-5 pt-5 border-t border-allos-warm">
-                    <p className="text-xs font-sans uppercase tracking-widest text-allos-olive mb-2">Reflection</p>
-                    <p className="text-allos-navy/70 font-sans text-sm leading-relaxed italic">{response.reflection}</p>
-                  </div>
-                )}
-                {response.prayer && (
-                  <div className="mt-5 pt-5 border-t border-allos-warm">
-                    <p className="text-xs font-sans uppercase tracking-widest text-allos-olive mb-2">Prayer</p>
-                    <p className="text-allos-navy/70 font-sans text-sm leading-relaxed italic">{response.prayer}</p>
-                  </div>
-                )}
-                {response.declaration && (
-                  <div className="mt-5 pt-5 border-t border-allos-warm">
-                    <p className="text-xs font-sans uppercase tracking-widest text-allos-olive mb-2">Declaration</p>
-                    <p className="text-allos-navy/70 font-sans text-sm leading-relaxed">{response.declaration}</p>
-                  </div>
-                )}
-                {response.nextStep && (
-                  <div className="mt-5 pt-5 border-t border-allos-warm">
-                    <p className="text-xs font-sans uppercase tracking-widest text-allos-olive mb-2">Next Step</p>
-                    <p className="text-allos-navy/70 font-sans text-sm leading-relaxed">{response.nextStep}</p>
-                  </div>
-                )}
+            </div>
+
+            {/* Input summary */}
+            <div className="bg-allos-fog rounded-2xl p-4 mb-6 text-sm">
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Your season</p>
+              <div className="flex flex-wrap gap-1.5">
+                {mood && <span className="bg-allos-mist text-allos-navy px-2.5 py-1 rounded-lg text-xs font-medium">{mood}</span>}
+                {struggle && <span className="bg-allos-mist text-allos-navy px-2.5 py-1 rounded-lg text-xs font-medium">{struggle}</span>}
+                {lifeChallenge && <span className="bg-allos-mist text-allos-navy px-2.5 py-1 rounded-lg text-xs font-medium">{lifeChallenge}</span>}
+                {spiritualNeed && <span className="bg-allos-mist text-allos-navy px-2.5 py-1 rounded-lg text-xs font-medium">Needs: {spiritualNeed}</span>}
               </div>
             </div>
 
-            {/* Feedback */}
-            <div className="flex gap-3 mb-4">
-              <button onClick={() => setRating('helpful')}
-                className={`flex-1 py-2 rounded-lg text-sm font-sans border transition-all ${rating === 'helpful' ? 'bg-allos-olive text-white border-allos-olive' : 'bg-white text-allos-navy border-allos-warm hover:border-allos-olive'}`}>
-                Helpful ✓
-              </button>
-              <button onClick={() => setRating('not_helpful')}
-                className={`flex-1 py-2 rounded-lg text-sm font-sans border transition-all ${rating === 'not_helpful' ? 'bg-allos-clay/20 text-allos-clay border-allos-clay' : 'bg-white text-allos-navy border-allos-warm'}`}>
-                Not quite
+            {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+
+            <div className="flex gap-3">
+              <button onClick={() => setStep('spirit')} className="flex-1 border border-slate-200 text-slate-500 py-4 rounded-2xl font-medium hover:bg-slate-50 transition-colors">← Back</button>
+              <button onClick={generate} disabled={loading}
+                className="flex-[2] bg-allos-navy text-white py-4 rounded-2xl font-medium disabled:opacity-50 hover:bg-allos-blue transition-colors">
+                {loading ? 'Finding your Scripture…' : 'Receive Your Word →'}
               </button>
             </div>
-
-            {/* Actions */}
-            <div className="flex flex-col gap-3">
-              <button onClick={saveToJourney} disabled={saved}
-                className={`w-full py-3 rounded-lg font-sans font-medium text-sm transition-all ${saved ? 'bg-allos-olive/10 text-allos-olive border border-allos-olive/30' : 'bg-allos-navy text-allos-cream hover:bg-allos-navy/90'}`}>
-                {saved ? '✓ Saved to Journey' : 'Save to Journey'}
-              </button>
-              <button onClick={() => { setStep('season'); setResponse(null); setSeason({ moods: [], struggles: [], challenges: [], spiritualNeeds: [], customInput: '' }); }}
-                className="w-full py-3 rounded-lg font-sans text-sm text-allos-navy border border-allos-warm hover:bg-allos-warm transition-colors">
-                Begin Again
-              </button>
-              <button onClick={generate}
-                className="w-full py-3 rounded-lg font-sans text-sm text-allos-navy/60 hover:text-allos-navy transition-colors">
-                ↺ Regenerate
-              </button>
-            </div>
-
-            <p className="mt-6 text-xs text-allos-navy/40 font-sans text-center leading-relaxed">
-              This is Scripture-guided encouragement, not a replacement for church, pastoral care, counseling, medical care, or emergency support.
-            </p>
           </div>
         )}
-      </div>
-    </main>
-  );
-}
 
-function ChipSection({ title, items, selected, onToggle }: { title: string; items: string[]; selected: string[]; onToggle: (item: string) => void }) {
-  return (
-    <div className="mb-6">
-      <p className="text-sm font-sans font-medium text-allos-navy mb-3">{title}</p>
-      <div className="flex flex-wrap gap-2">
-        {items.map(item => (
-          <Chip key={item} label={item} selected={selected.includes(item)} onClick={() => onToggle(item)} />
-        ))}
-      </div>
+        {/* ── RESULT ── */}
+        {step === 'result' && (
+          <div>
+            {isCrisis ? (
+              <div className="bg-red-50 border border-red-200 rounded-2xl p-6">
+                <p className="font-semibold text-red-700 mb-3">Please reach out for support</p>
+                <div className="whitespace-pre-wrap text-sm text-red-800">{result}</div>
+              </div>
+            ) : (
+              <div>
+                <div className="flex items-center gap-3 mb-6">
+                  <AllosLogo size="xs" variant="icon" />
+                  <div>
+                    <p className="text-xs font-semibold tracking-wider text-allos-blue uppercase">Your Word for This Season</p>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {mood && <span className="text-xs text-slate-400">{mood}</span>}
+                      {struggle && <span className="text-xs text-slate-300">·</span>}
+                      {struggle && <span className="text-xs text-slate-400">{struggle}</span>}
+                      {lifeChallenge && <span className="text-xs text-slate-300">·</span>}
+                      {lifeChallenge && <span className="text-xs text-slate-400">{lifeChallenge}</span>}
+                    </div>
+                  </div>
+                </div>
+                <div className="prose prose-sm max-w-none text-allos-navy leading-relaxed whitespace-pre-wrap font-serif mb-8">
+                  {result}
+                </div>
+                <div className="border-t border-slate-100 pt-6 flex flex-col gap-3">
+                  <Link href="/auth/login"
+                    className="w-full bg-allos-navy text-white text-center py-4 rounded-2xl font-medium hover:bg-allos-blue transition-colors">
+                    Save to My Journey
+                  </Link>
+                  <button onClick={reset}
+                    className="w-full border border-slate-200 text-slate-500 py-3.5 rounded-2xl font-medium hover:bg-slate-50 transition-colors">
+                    Start Again
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </main>
     </div>
   );
 }
