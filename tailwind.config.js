@@ -1,31 +1,26 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: [
-    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
-  ],
+  content: ['./src/**/*.{js,ts,jsx,tsx,mdx}'],
   theme: {
     extend: {
       colors: {
-        allos: {
-          // Core blues — peace, trust, depth
-          navy:    '#1A2E4A',   // deep authority
-          blue:    '#2E6DA4',   // primary brand blue
-          sky:     '#5B9FD4',   // lighter, breath
-          mist:    '#C8DFF0',   // soft backgrounds
-          // Warm accents — kept minimal
-          gold:    '#C9A84C',   // Scripture warmth
-          olive:   '#6B7E4A',   // life, growth
-          clay:    '#C4714A',   // human warmth
-          // Neutrals
-          sand:    '#F7F4EF',   // warm off-white bg
-          fog:     '#EEF2F7',   // cool off-white bg
-        },
+        deep:    '#1B3A57',
+        deep900: '#122A40',
+        slate:   '#2C5573',
+        sky:     '#6E9CC4',
+        mist:    '#CFE0EE',
+        powder:  '#E8F0F7',
+        white:   '#F6F9FB',
+        gold:    '#C8943F',
+        text:    '#54677A',
+        border:  '#DBE5EE',
       },
       fontFamily: {
-        serif: ['"Palatino Linotype"', 'Palatino', '"Book Antiqua"', 'Georgia', 'serif'],
-        sans:  ['"Helvetica Neue"', 'Arial', 'sans-serif'],
+        serif: ['Spectral', 'Georgia', 'serif'],
+        sans:  ['Hanken Grotesk', 'system-ui', 'sans-serif'],
+      },
+      borderRadius: {
+        pill: '100px',
       },
     },
   },
