@@ -6,13 +6,11 @@ export async function GET() {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
     const { data, error } = await supabase
       .from('journey_entries')
       .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
-
     if (error) throw error;
     return NextResponse.json({ entries: data });
   } catch (error) {
@@ -26,15 +24,14 @@ export async function POST(request: Request) {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
     const body = await request.json();
     const { title, content, mood, struggle, lifeChallenge, spiritualNeed, outputType, tone, length, notes } = body;
-
+    const entryTitle = title || (mood || 'Untitled') + ' — ' + new Date().toLocaleDateString();
     const { data, error } = await supabase
       .from('journey_entries')
       .insert({
         user_id: user.id,
-        title: title || \`\${mood || 'Untitled'} — \${new Date().toLocaleDateString()}\`,
+        title: entryTitle,
         content,
         mood,
         struggle,
@@ -47,7 +44,6 @@ export async function POST(request: Request) {
       })
       .select()
       .single();
-
     if (error) throw error;
     return NextResponse.json({ entry: data });
   } catch (error) {
