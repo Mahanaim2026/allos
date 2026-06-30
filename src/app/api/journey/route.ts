@@ -1,10 +1,22 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
+async function getAuthUser() {
+  const supabase = createClient();
+  // Try getUser first (validates with server), fall back to getSession (local JWT)
+  try {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (user && !error) return { supabase, user };
+  } catch {}
+  // Fallback: getSession reads local cookie JWT without server round-trip
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session?.user) return { supabase, user: session.user };
+  return { supabase, user: null };
+}
+
 export async function GET() {
   try {
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const { supabase, user } = await getAuthUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const { data, error } = await supabase
       .from('journey_entries')
@@ -21,12 +33,11 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const { supabase, user } = await getAuthUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const body = await request.json();
     const { title, content, mood, struggle, lifeChallenge, spiritualNeed, outputType, tone, length, notes } = body;
-    const entryTitle = title || (mood || 'Untitled') + ' — ' + new Date().toLocaleDateString();
+    const entryTitle = title || (mood ? mood + ' — ' : '') + new Date().toLocaleDateString();
     const { data, error } = await supabase
       .from('journey_entries')
       .insert({
