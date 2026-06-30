@@ -3,308 +3,213 @@ import { useState } from 'react';
 import Link from 'next/link';
 import AllosLogo from '@/components/AllosLogo';
 
-const MOODS = ['Anxious', 'Sad', 'Weary', 'Angry', 'Lonely', 'Confused', 'Grateful', 'Hopeful'];
-const STRUGGLES = ['Fear', 'Resentment', 'Shame', 'Doubt', 'Unforgiveness', 'Lust', 'Impatience', 'Discouragement'];
-const LIFE_CHALLENGES = ['Waiting', 'Childlessness', 'Marital conflict', 'Grief', 'Parenting', 'Finances', 'Betrayal', 'Unemployment'];
-const SPIRITUAL_NEEDS = ['Comfort', 'Wisdom', 'Courage', 'Repentance', 'Hope', 'Peace', 'Direction', 'Strength'];
+const MOODS = ['Anxious','Sad','Weary','Angry','Lonely','Confused','Grateful','Hopeful'];
+const STRUGGLES = ['Fear','Resentment','Shame','Doubt','Unforgiveness','Lust','Impatience','Discouragement'];
+const LIFE = ['Waiting','Childlessness','Marital conflict','Grief','Parenting','Finances','Betrayal','Unemployment'];
+const SPIRIT = ['Comfort','Wisdom','Courage','Repentance','Hope','Peace','Direction','Strength'];
+const FORMATS = ['Sermonette','Scripture exhortation','Prayer','Meditation','Declaration','Song / Poem'];
+const TONES = ['Gentle','Pastoral','Bold','Reflective','Prophetic'];
+const LENGTHS = ['Short','Medium','Deep'];
 
-const OUTPUT_TYPES = [
-  { value: 'sermonette', label: 'Sermonette', icon: '📖', desc: 'A short, focused mini-sermon' },
-  { value: 'scripture_exhortation', label: 'Scripture', icon: '✦', desc: 'Chosen verses with application' },
-  { value: 'prayer', label: 'Prayer', icon: '🙏', desc: 'A personal, heartfelt prayer' },
-  { value: 'meditation', label: 'Meditation', icon: '◎', desc: 'Slow contemplation on one passage' },
-  { value: 'declaration', label: 'Declaration', icon: '⚡', desc: 'Bold Scripture-based declarations' },
-  { value: 'song_poem', label: 'Poem/Song', icon: '♩', desc: 'A devotional lyrical piece' },
-];
+const CHIP = (label: string, active: boolean, onClick: () => void) => (
+  <button key={label} onClick={onClick}
+    style={{ padding: '8px 16px', borderRadius: '100px', border: active ? 'none' : '1px solid #DBE5EE', background: active ? '#1B3A57' : '#F6F9FB', color: active ? '#F6F9FB' : '#54677A', fontSize: '0.85rem', fontWeight: active ? 600 : 400, cursor: 'pointer', transition: 'all 0.15s' }}>
+    {label}
+  </button>
+);
 
-const TONES = [
-  { value: 'gentle', label: 'Gentle', desc: 'Tender & compassionate' },
-  { value: 'pastoral', label: 'Pastoral', desc: 'Grounded & caring' },
-  { value: 'bold', label: 'Bold', desc: 'Strong & convicting' },
-  { value: 'reflective', label: 'Reflective', desc: 'Contemplative & still' },
-  { value: 'prophetic', label: 'Prophetic', desc: 'Declaring God\'s word over your season' },
-];
-
-const LENGTHS = [
-  { value: 'short', label: 'Short', desc: '~150 words' },
-  { value: 'medium', label: 'Medium', desc: '~350 words' },
-  { value: 'deep', label: 'Deep', desc: '~600 words' },
-];
-
-type Step = 'mood' | 'struggle' | 'life' | 'spirit' | 'format' | 'result';
-
-function Chip({ label, selected, onClick }: { label: string; selected: boolean; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all border ${
-        selected
-          ? 'bg-allos-navy text-white border-allos-navy shadow-sm'
-          : 'bg-white text-allos-navy border-allos-navy/20 hover:border-allos-blue hover:bg-allos-mist/30'
-      }`}
-    >
-      {label}
-    </button>
-  );
-}
-
-function StepHeader({ step, total, title, subtitle }: { step: number; total: number; title: string; subtitle: string }) {
-  return (
-    <div className="mb-8">
-      <div className="flex items-center gap-2 mb-4">
-        {Array.from({ length: total }).map((_, i) => (
-          <div
-            key={i}
-            className={`h-1 rounded-full flex-1 transition-all ${i < step ? 'bg-allos-blue' : i === step - 1 ? 'bg-allos-blue' : 'bg-slate-200'}`}
-          />
-        ))}
-      </div>
-      <p className="text-xs font-semibold tracking-[0.18em] text-allos-blue uppercase mb-2">Step {step} of {total}</p>
-      <h2 className="text-2xl font-serif font-medium text-allos-navy mb-1">{title}</h2>
-      <p className="text-sm text-slate-500">{subtitle}</p>
-    </div>
-  );
-}
+const SECTION_LABEL = (t: string) => (
+  <p style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase', color: '#6E9CC4', margin: '0 0 12px' }}>{t}</p>
+);
 
 export default function AppPage() {
-  const [step, setStep] = useState<Step>('mood');
+  const [step, setStep] = useState(1);
   const [mood, setMood] = useState('');
   const [struggle, setStruggle] = useState('');
-  const [lifeChallenge, setLifeChallenge] = useState('');
-  const [spiritualNeed, setSpiritualNeed] = useState('');
-  const [outputType, setOutputType] = useState('sermonette');
-  const [tone, setTone] = useState('pastoral');
-  const [length, setLength] = useState('medium');
-  const [additionalContext, setAdditionalContext] = useState('');
+  const [life, setLife] = useState('');
+  const [spirit, setSpirit] = useState('');
+  const [format, setFormat] = useState('Prayer');
+  const [tone, setTone] = useState('Gentle');
+  const [length, setLength] = useState('Medium');
   const [result, setResult] = useState('');
-  const [isCrisis, setIsCrisis] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [saved, setSaved] = useState(false);
 
-  const steps: Step[] = ['mood', 'struggle', 'life', 'spirit', 'format', 'result'];
-  const stepNum = steps.indexOf(step) + 1;
-
-  async function generate() {
+  const generate = async () => {
     setLoading(true);
-    setError('');
+    setStep(3);
+    setResult('');
     try {
-      const resp = await fetch('/api/generate', {
+      const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mood, struggle, lifeChallenge, spiritualNeed, outputType, tone, length, additionalContext }),
+        body: JSON.stringify({ mood, struggle, lifeChallenge: life, spiritualNeed: spirit, format, tone, length }),
       });
-      const data = await resp.json();
-      if (data.error) throw new Error(data.error);
-      setResult(data.content);
-      setIsCrisis(data.isCrisis || false);
-      setStep('result');
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Something went wrong. Please try again.');
-    } finally {
-      setLoading(false);
+      const data = await res.json();
+      setResult(data.content || data.error || 'Something went wrong. Please try again.');
+    } catch {
+      setResult('Network error. Please check your connection and try again.');
     }
-  }
+    setLoading(false);
+  };
 
-  function reset() {
-    setStep('mood'); setMood(''); setStruggle(''); setLifeChallenge('');
-    setSpiritualNeed(''); setResult(''); setIsCrisis(false); setError('');
-    setOutputType('sermonette'); setTone('pastoral'); setLength('medium'); setAdditionalContext('');
-  }
+  const saveJourney = async () => {
+    try {
+      await fetch('/api/journey', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mood, struggle, life_challenge: life, spiritual_need: spirit, format, tone, length, content: result }) });
+      setSaved(true);
+    } catch { /* silent */ }
+  };
 
+  const reset = () => { setStep(1); setMood(''); setStruggle(''); setLife(''); setSpirit(''); setFormat('Prayer'); setTone('Gentle'); setLength('Medium'); setResult(''); setSaved(false); };
+
+  const NAV = (
+    <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid #DBE5EE', background: '#F6F9FB', position: 'sticky', top: 0, zIndex: 50 }}>
+      <Link href="/" style={{ textDecoration: 'none' }}><AllosLogo size={32} variant="light" showWordmark /></Link>
+      <div style={{ display: 'flex', gap: 16 }}>
+        <Link href="/journey" style={{ color: '#54677A', fontSize: '0.85rem', textDecoration: 'none', fontWeight: 500 }}>Journey</Link>
+        <Link href="/auth/login" style={{ color: '#54677A', fontSize: '0.85rem', textDecoration: 'none', fontWeight: 500 }}>Sign in</Link>
+      </div>
+    </nav>
+  );
+
+  // STEP 1 — Season input
+  if (step === 1) return (
+    <div style={{ minHeight: '100vh', background: '#F6F9FB' }}>
+      {NAV}
+      <div style={{ maxWidth: 640, margin: '0 auto', padding: '40px 24px' }}>
+        <div style={{ textAlign: 'center', marginBottom: 36 }}>
+          {SECTION_LABEL('YOUR SEASON')}
+          <h1 style={{ fontFamily: "'Spectral', Georgia, serif", fontSize: 'clamp(22px, 3vw, 30px)', fontWeight: 300, color: '#1B3A57', margin: 0, lineHeight: 1.3 }}>What are you carrying right now?</h1>
+          <p style={{ color: '#54677A', fontSize: '0.9rem', marginTop: 8 }}>Select what feels most true. Nothing is required.</p>
+        </div>
+
+        {/* MOOD */}
+        <div style={{ marginBottom: 28 }}>
+          {SECTION_LABEL('MY MOOD')}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {MOODS.map(m => CHIP(m, mood === m, () => setMood(mood === m ? '' : m)))}
+          </div>
+        </div>
+
+        {/* STRUGGLE */}
+        <div style={{ marginBottom: 28 }}>
+          {SECTION_LABEL('A STRUGGLE')}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {STRUGGLES.map(s => CHIP(s, struggle === s, () => setStruggle(struggle === s ? '' : s)))}
+          </div>
+        </div>
+
+        {/* LIFE */}
+        <div style={{ marginBottom: 28 }}>
+          {SECTION_LABEL('LIFE CHALLENGE')}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {LIFE.map(l => CHIP(l, life === l, () => setLife(life === l ? '' : l)))}
+          </div>
+        </div>
+
+        {/* SPIRIT */}
+        <div style={{ marginBottom: 36 }}>
+          {SECTION_LABEL('SPIRITUAL NEED')}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {SPIRIT.map(s => CHIP(s, spirit === s, () => setSpirit(spirit === s ? '' : s)))}
+          </div>
+        </div>
+
+        <button onClick={() => setStep(2)} disabled={!mood && !struggle && !life && !spirit}
+          style={{ width: '100%', padding: '14px', background: (!mood && !struggle && !life && !spirit) ? '#DBE5EE' : '#1B3A57', color: (!mood && !struggle && !life && !spirit) ? '#54677A' : '#F6F9FB', border: 'none', borderRadius: '100px', fontSize: '0.95rem', fontWeight: 600, cursor: (!mood && !struggle && !life && !spirit) ? 'not-allowed' : 'pointer' }}>
+          Continue
+        </button>
+      </div>
+    </div>
+  );
+
+  // STEP 2 — Format & tone
+  if (step === 2) return (
+    <div style={{ minHeight: '100vh', background: '#F6F9FB' }}>
+      {NAV}
+      <div style={{ maxWidth: 640, margin: '0 auto', padding: '40px 24px' }}>
+        <button onClick={() => setStep(1)} style={{ background: 'none', border: 'none', color: '#54677A', cursor: 'pointer', fontSize: '0.85rem', marginBottom: 24, padding: 0 }}>
+          ← Back
+        </button>
+
+        {/* SEASON SUMMARY */}
+        <div style={{ background: '#E8F0F7', border: '1px solid #DBE5EE', borderRadius: 14, padding: '16px 20px', marginBottom: 32 }}>
+          {SECTION_LABEL('YOUR SEASON')}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {[mood, struggle, life, spirit].filter(Boolean).map(t => (
+              <span key={t} style={{ background: '#1B3A57', color: '#F6F9FB', padding: '4px 12px', borderRadius: '100px', fontSize: '0.82rem', fontWeight: 500 }}>{t}</span>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 28 }}>
+          {SECTION_LABEL('OUTPUT FORMAT')}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {FORMATS.map(f => CHIP(f, format === f, () => setFormat(f)))}
+          </div>
+        </div>
+        <div style={{ marginBottom: 28 }}>
+          {SECTION_LABEL('TONE')}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {TONES.map(t => CHIP(t, tone === t, () => setTone(t)))}
+          </div>
+        </div>
+        <div style={{ marginBottom: 36 }}>
+          {SECTION_LABEL('DEPTH')}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {LENGTHS.map(l => CHIP(l, length === l, () => setLength(l)))}
+          </div>
+        </div>
+
+        <button onClick={generate} style={{ width: '100%', padding: '14px', background: '#1B3A57', color: '#F6F9FB', border: 'none', borderRadius: '100px', fontSize: '0.95rem', fontWeight: 600, cursor: 'pointer' }}>
+          Receive the Word
+        </button>
+      </div>
+    </div>
+  );
+
+  // STEP 3 — Result
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      <nav className="w-full px-6 pt-6 pb-3 flex items-center justify-between max-w-lg mx-auto">
-        <Link href="/"><AllosLogo size="sm" variant="full" /></Link>
-        <Link href="/journey" className="text-xs font-medium text-allos-blue hover:underline">My Journey</Link>
-      </nav>
-
-      <main className="flex-1 px-6 py-6 max-w-lg mx-auto w-full">
-
-        {/* ── STEP 1: Mood ── */}
-        {step === 'mood' && (
-          <div>
-            <StepHeader step={1} total={5} title="How are you feeling?" subtitle="Select the emotion that best describes your heart right now." />
-            <div className="flex flex-wrap gap-2.5 mb-8">
-              {MOODS.map(m => <Chip key={m} label={m} selected={mood === m} onClick={() => setMood(m)} />)}
+    <div style={{ minHeight: '100vh', background: '#F6F9FB' }}>
+      {NAV}
+      <div style={{ maxWidth: 680, margin: '0 auto', padding: '40px 24px' }}>
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '80px 0' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#1B3A57', borderRadius: '50%', width: 64, height: 64, marginBottom: 20 }}>
+              <AllosLogo size={38} variant="dark" />
             </div>
-            <div className="mb-6">
-              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Anything else you want to share? (optional)</label>
-              <textarea
-                value={additionalContext}
-                onChange={e => setAdditionalContext(e.target.value)}
-                placeholder="e.g. I've been waiting for a breakthrough for two years..."
-                rows={3}
-                className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-allos-navy placeholder:text-slate-300 focus:outline-none focus:border-allos-blue resize-none"
-              />
-            </div>
-            <button onClick={() => setStep('struggle')} disabled={!mood}
-              className="w-full bg-allos-navy text-white py-4 rounded-2xl font-medium disabled:opacity-40 hover:bg-allos-blue transition-colors">
-              Continue →
-            </button>
+            <p style={{ fontFamily: "'Spectral', Georgia, serif", fontSize: '1.2rem', fontStyle: 'italic', color: '#54677A' }}>Bringing your season before the Word&hellip;</p>
           </div>
-        )}
-
-        {/* ── STEP 2: Struggle ── */}
-        {step === 'struggle' && (
-          <div>
-            <StepHeader step={2} total={5} title="What are you wrestling with?" subtitle="Choose the spiritual struggle closest to what you're facing." />
-            <div className="flex flex-wrap gap-2.5 mb-8">
-              {STRUGGLES.map(s => <Chip key={s} label={s} selected={struggle === s} onClick={() => setStruggle(s)} />)}
+        ) : (
+          <>
+            {/* SEASON TAGS */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 20 }}>
+              {[mood, struggle, life, spirit].filter(Boolean).map(t => (
+                <span key={t} style={{ background: '#E8F0F7', color: '#1B3A57', padding: '4px 12px', borderRadius: '100px', fontSize: '0.8rem', fontWeight: 500, border: '1px solid #DBE5EE' }}>{t}</span>
+              ))}
+              <span style={{ background: '#C8943F', color: '#fff', padding: '4px 12px', borderRadius: '100px', fontSize: '0.8rem', fontWeight: 600 }}>{format}</span>
             </div>
-            <div className="flex gap-3">
-              <button onClick={() => setStep('mood')} className="flex-1 border border-slate-200 text-slate-500 py-4 rounded-2xl font-medium hover:bg-slate-50 transition-colors">← Back</button>
-              <button onClick={() => setStep('life')} disabled={!struggle}
-                className="flex-[2] bg-allos-navy text-white py-4 rounded-2xl font-medium disabled:opacity-40 hover:bg-allos-blue transition-colors">
-                Continue →
+
+            {/* RESULT CARD */}
+            <div style={{ background: '#fff', border: '1px solid #DBE5EE', borderRadius: 20, padding: '32px 28px', boxShadow: '0 4px 24px rgba(27,58,87,0.07)', marginBottom: 24 }}>
+              <div style={{ fontFamily: "'Spectral', Georgia, serif", fontSize: '1.05rem', lineHeight: 1.9, color: '#1B3A57', whiteSpace: 'pre-wrap' }}>
+                {result}
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+              <button onClick={saveJourney} disabled={saved}
+                style={{ flex: 1, padding: '12px 20px', background: saved ? '#E8F0F7' : '#1B3A57', color: saved ? '#54677A' : '#F6F9FB', border: 'none', borderRadius: '100px', fontSize: '0.9rem', fontWeight: 600, cursor: saved ? 'default' : 'pointer', minWidth: 160 }}>
+                {saved ? 'Saved to Journey' : 'Save to Journey'}
+              </button>
+              <button onClick={reset}
+                style={{ flex: 1, padding: '12px 20px', background: 'transparent', color: '#1B3A57', border: '1px solid #DBE5EE', borderRadius: '100px', fontSize: '0.9rem', fontWeight: 500, cursor: 'pointer', minWidth: 140 }}>
+                New season
               </button>
             </div>
-          </div>
+          </>
         )}
-
-        {/* ── STEP 3: Life Challenge ── */}
-        {step === 'life' && (
-          <div>
-            <StepHeader step={3} total={5} title="What life challenge are you navigating?" subtitle="Select the area of life that weighs most on you right now." />
-            <div className="flex flex-wrap gap-2.5 mb-8">
-              {LIFE_CHALLENGES.map(l => <Chip key={l} label={l} selected={lifeChallenge === l} onClick={() => setLifeChallenge(l)} />)}
-            </div>
-            <div className="flex gap-3">
-              <button onClick={() => setStep('struggle')} className="flex-1 border border-slate-200 text-slate-500 py-4 rounded-2xl font-medium hover:bg-slate-50 transition-colors">← Back</button>
-              <button onClick={() => setStep('spirit')} disabled={!lifeChallenge}
-                className="flex-[2] bg-allos-navy text-white py-4 rounded-2xl font-medium disabled:opacity-40 hover:bg-allos-blue transition-colors">
-                Continue →
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* ── STEP 4: Spiritual Need ── */}
-        {step === 'spirit' && (
-          <div>
-            <StepHeader step={4} total={5} title="What does your spirit need?" subtitle="What are you asking God for in this season?" />
-            <div className="flex flex-wrap gap-2.5 mb-8">
-              {SPIRITUAL_NEEDS.map(n => <Chip key={n} label={n} selected={spiritualNeed === n} onClick={() => setSpiritualNeed(n)} />)}
-            </div>
-            <div className="flex gap-3">
-              <button onClick={() => setStep('life')} className="flex-1 border border-slate-200 text-slate-500 py-4 rounded-2xl font-medium hover:bg-slate-50 transition-colors">← Back</button>
-              <button onClick={() => setStep('format')} disabled={!spiritualNeed}
-                className="flex-[2] bg-allos-navy text-white py-4 rounded-2xl font-medium disabled:opacity-40 hover:bg-allos-blue transition-colors">
-                Continue →
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* ── STEP 5: Format ── */}
-        {step === 'format' && (
-          <div>
-            <StepHeader step={5} total={5} title="How do you want to receive this?" subtitle="Choose the format, tone, and depth that speaks to you." />
-
-            <div className="mb-6">
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Format</p>
-              <div className="grid grid-cols-2 gap-2">
-                {OUTPUT_TYPES.map(o => (
-                  <button key={o.value} type="button" onClick={() => setOutputType(o.value)}
-                    className={`text-left p-3 rounded-xl border transition-all ${outputType === o.value ? 'border-allos-blue bg-allos-mist/40' : 'border-slate-200 hover:border-allos-blue/40'}`}>
-                    <span className="text-base mr-1">{o.icon}</span>
-                    <span className={`text-sm font-semibold ${outputType === o.value ? 'text-allos-navy' : 'text-slate-600'}`}>{o.label}</span>
-                    <p className="text-xs text-slate-400 mt-0.5">{o.desc}</p>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="mb-6">
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Tone</p>
-              <div className="flex flex-wrap gap-2">
-                {TONES.map(t => (
-                  <button key={t.value} type="button" onClick={() => setTone(t.value)}
-                    className={`px-3 py-2 rounded-xl border text-sm transition-all ${tone === t.value ? 'bg-allos-navy text-white border-allos-navy' : 'border-slate-200 text-slate-600 hover:border-allos-blue'}`}>
-                    <span className="font-medium">{t.label}</span>
-                    <span className={`block text-xs mt-0 ${tone === t.value ? 'text-white/70' : 'text-slate-400'}`}>{t.desc}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="mb-8">
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Depth</p>
-              <div className="flex gap-2">
-                {LENGTHS.map(l => (
-                  <button key={l.value} type="button" onClick={() => setLength(l.value)}
-                    className={`flex-1 py-3 rounded-xl border text-sm font-medium transition-all ${length === l.value ? 'bg-allos-navy text-white border-allos-navy' : 'border-slate-200 text-slate-600 hover:border-allos-blue'}`}>
-                    {l.label}
-                    <span className={`block text-xs mt-0.5 ${length === l.value ? 'text-white/70' : 'text-slate-400'}`}>{l.desc}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Input summary */}
-            <div className="bg-allos-fog rounded-2xl p-4 mb-6 text-sm">
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Your season</p>
-              <div className="flex flex-wrap gap-1.5">
-                {mood && <span className="bg-allos-mist text-allos-navy px-2.5 py-1 rounded-lg text-xs font-medium">{mood}</span>}
-                {struggle && <span className="bg-allos-mist text-allos-navy px-2.5 py-1 rounded-lg text-xs font-medium">{struggle}</span>}
-                {lifeChallenge && <span className="bg-allos-mist text-allos-navy px-2.5 py-1 rounded-lg text-xs font-medium">{lifeChallenge}</span>}
-                {spiritualNeed && <span className="bg-allos-mist text-allos-navy px-2.5 py-1 rounded-lg text-xs font-medium">Needs: {spiritualNeed}</span>}
-              </div>
-            </div>
-
-            {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
-
-            <div className="flex gap-3">
-              <button onClick={() => setStep('spirit')} className="flex-1 border border-slate-200 text-slate-500 py-4 rounded-2xl font-medium hover:bg-slate-50 transition-colors">← Back</button>
-              <button onClick={generate} disabled={loading}
-                className="flex-[2] bg-allos-navy text-white py-4 rounded-2xl font-medium disabled:opacity-50 hover:bg-allos-blue transition-colors">
-                {loading ? 'Finding your Scripture…' : 'Receive Your Word →'}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* ── RESULT ── */}
-        {step === 'result' && (
-          <div>
-            {isCrisis ? (
-              <div className="bg-red-50 border border-red-200 rounded-2xl p-6">
-                <p className="font-semibold text-red-700 mb-3">Please reach out for support</p>
-                <div className="whitespace-pre-wrap text-sm text-red-800">{result}</div>
-              </div>
-            ) : (
-              <div>
-                <div className="flex items-center gap-3 mb-6">
-                  <AllosLogo size="xs" variant="icon" />
-                  <div>
-                    <p className="text-xs font-semibold tracking-wider text-allos-blue uppercase">Your Word for This Season</p>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {mood && <span className="text-xs text-slate-400">{mood}</span>}
-                      {struggle && <span className="text-xs text-slate-300">·</span>}
-                      {struggle && <span className="text-xs text-slate-400">{struggle}</span>}
-                      {lifeChallenge && <span className="text-xs text-slate-300">·</span>}
-                      {lifeChallenge && <span className="text-xs text-slate-400">{lifeChallenge}</span>}
-                    </div>
-                  </div>
-                </div>
-                <div className="prose prose-sm max-w-none text-allos-navy leading-relaxed whitespace-pre-wrap font-serif mb-8">
-                  {result}
-                </div>
-                <div className="border-t border-slate-100 pt-6 flex flex-col gap-3">
-                  <Link href="/auth/login"
-                    className="w-full bg-allos-navy text-white text-center py-4 rounded-2xl font-medium hover:bg-allos-blue transition-colors">
-                    Save to My Journey
-                  </Link>
-                  <button onClick={reset}
-                    className="w-full border border-slate-200 text-slate-500 py-3.5 rounded-2xl font-medium hover:bg-slate-50 transition-colors">
-                    Start Again
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-      </main>
+      </div>
     </div>
   );
 }
