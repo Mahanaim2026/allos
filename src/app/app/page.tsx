@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import AllosLogo from '@/components/AllosLogo';
 import { createClient } from '@/lib/supabase/client';
@@ -12,13 +12,13 @@ const FORMATS = ['Sermonette','Scripture exhortation','Prayer','Meditation','Dec
 const TONES = ['Gentle','Pastoral','Bold','Reflective','Prophetic'];
 const LENGTHS = ['Short','Medium','Deep'];
 
-// Render plain text with paragraph breaks as clean HTML â no markdown symbols
+// Render plain text with paragraph breaks as clean HTML Ã¢ÂÂ no markdown symbols
 function renderOutput(text: string) {
   if (!text) return null;
   // Strip any residual markdown symbols just in case
   const clean = text
-    .replace(/**(.+?)**/g, '$1')
-    .replace(/*(.+?)*/g, '$1')
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/\*(.+?)\*/g, '$1')
     .replace(/^#{1,6}\s+/gm, '')
     .replace(/^[-*]\s+/gm, '')
     .replace(/```[\s\S]*?```/g, '')
@@ -72,6 +72,78 @@ const CHIP = (label: string, active: boolean, onClick: () => void) => (
   </button>
 );
 const LABEL = (t: string) => <p style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase' as const, color: '#6E9CC4', margin: '0 0 12px' }}>{t}</p>;
+
+
+const WAITING_MESSAGES = [
+  { text: 'Be still, and know that I am God.', ref: 'Psalm 46:10' },
+  { text: 'Those who wait upon the Lord shall renew their strength.', ref: 'Isaiah 40:31' },
+  { text: 'In quietness and trust is your strength.', ref: 'Isaiah 30:15' },
+  { text: 'The Lord your God is in your midst — He will quiet you with His love.', ref: 'Zephaniah 3:17' },
+  { text: 'Come to Me, all who are weary, and I will give you rest.', ref: 'Matthew 11:28' },
+  { text: 'Cast all your anxiety on Him, for He cares for you.', ref: '1 Peter 5:7' },
+  { text: 'The Word of God is living and active.', ref: 'Hebrews 4:12' },
+  { text: 'He restores my soul. He guides me in right paths.', ref: 'Psalm 23:3' },
+];
+
+function LoadingScreen() {
+  const [msgIdx, setMsgIdx] = React.useState(0);
+  const [visible, setVisible] = React.useState(true);
+  React.useEffect(() => {
+    const timer = setInterval(() => {
+      setVisible(false);
+      setTimeout(() => {
+        setMsgIdx(i => (i + 1) % WAITING_MESSAGES.length);
+        setVisible(true);
+      }, 500);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, []);
+  const msg = WAITING_MESSAGES[msgIdx];
+  return (
+    <div style={{ textAlign: 'center', padding: '72px 24px' }}>
+      <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#1B3A57', borderRadius: '50%', width: 64, height: 64, marginBottom: 28 }}>
+        <AllosLogo size={32} variant="dark" />
+      </div>
+      <p style={{ fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase', color: '#6E9CC4', marginBottom: 24 }}>
+        Bringing your season before the Word
+      </p>
+      <div style={{ transition: 'opacity 0.5s ease', opacity: visible ? 1 : 0, maxWidth: 440, margin: '0 auto', minHeight: 100 }}>
+        <p style={{ fontFamily: "'Spectral', Georgia, serif", fontStyle: 'italic', fontSize: '1.2rem', color: '#1B3A57', lineHeight: 1.75, marginBottom: 12 }}>
+          &ldquo;{msg.text}&rdquo;
+        </p>
+        <p style={{ fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '0.82rem', color: '#C8943F', letterSpacing: '0.04em' }}>
+          — {msg.ref}
+        </p>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 36 }}>
+        {[0, 1, 2].map((i) => (
+          <DotPulse key={i} delay={i * 220} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function DotPulse({ delay }: { delay: number }) {
+  const [scale, setScale] = React.useState(1);
+  React.useEffect(() => {
+    const t = setTimeout(() => {
+      const interval = setInterval(() => {
+        setScale(s => s === 1 ? 1.6 : 1);
+      }, 660);
+      return () => clearInterval(interval);
+    }, delay);
+    return () => clearTimeout(t);
+  }, [delay]);
+  return (
+    <div style={{
+      width: 7, height: 7, borderRadius: '50%',
+      background: '#1B3A57', opacity: 0.5,
+      transform: 'scale(' + scale + ')',
+      transition: 'transform 0.33s ease'
+    }} />
+  );
+}
 
 export default function AppPage() {
   const [step, setStep] = useState(1);
@@ -144,7 +216,7 @@ export default function AppPage() {
   };
 
   const shareWhatsApp = () => {
-    const text = encodeURIComponent('From Allos â ' + format + ':\n\n' + result.substring(0, 500) + '...\n\nhttps://www.word2go.com');
+    const text = encodeURIComponent('From Allos Ã¢ÂÂ ' + format + ':\n\n' + result.substring(0, 500) + '...\n\nhttps://www.word2go.com');
     window.open('https://wa.me/?text=' + text, '_blank');
   };
 
@@ -219,18 +291,13 @@ export default function AppPage() {
     </div>
   );
 
-  // STEP 3 â Result
+  // STEP 3 Ã¢ÂÂ Result
   return (
     <div style={{ minHeight: '100vh', background: '#F6F9FB' }}>
       {NAV}
       <div style={{ maxWidth: 680, margin: '0 auto', padding: '36px 24px' }}>
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '80px 0' }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#1B3A57', borderRadius: '50%', width: 64, height: 64, marginBottom: 20 }}>
-              <AllosLogo size={38} variant="dark" />
-            </div>
-            <p style={{ fontFamily: "'Spectral', Georgia, serif", fontSize: '1.15rem', fontStyle: 'italic', color: '#54677A' }}>Bringing your season before the Word&#8230;</p>
-          </div>
+          <LoadingScreen />
         ) : (
           <>
             {/* SEASON TAGS */}
@@ -251,7 +318,7 @@ export default function AppPage() {
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 14 }}>
               <button onClick={saveJourney} disabled={saved}
                 style={{ flex: '1 1 150px', padding: '12px 16px', background: saved ? '#E8F0F7' : '#1B3A57', color: saved ? '#54677A' : '#F6F9FB', border: 'none', borderRadius: '100px', fontSize: '0.875rem', fontWeight: 600, cursor: saved ? 'default' : 'pointer', minHeight: 44 }}>
-                {saved ? '✓ Saved' : 'Save to Journey'}
+                {saved ? 'â Saved' : 'Save to Journey'}
               </button>
               <button onClick={reset}
                 style={{ flex: '1 1 120px', padding: '12px 16px', background: 'transparent', color: '#1B3A57', border: '1px solid #DBE5EE', borderRadius: '100px', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer', minHeight: 44 }}>
@@ -287,8 +354,8 @@ export default function AppPage() {
 
                 {/* Email */}
                 <button onClick={() => {
-                  const subject = encodeURIComponent('A word for my season â from Allos');
-                  const body = encodeURIComponent(format + '\n\n' + result + '\n\nGenerated by Allos â https://www.word2go.com');
+                  const subject = encodeURIComponent('A word for my season Ã¢ÂÂ from Allos');
+                  const body = encodeURIComponent(format + '\n\n' + result + '\n\nGenerated by Allos Ã¢ÂÂ https://www.word2go.com');
                   window.open('mailto:?subject=' + subject + '&body=' + body);
                 }}
                   style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '10px 18px', background: '#F6F9FB', border: '1px solid #DBE5EE', borderRadius: '100px', fontSize: '0.83rem', fontWeight: 500, cursor: 'pointer', color: '#1B3A57', minHeight: 44 }}>
