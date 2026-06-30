@@ -10,8 +10,8 @@ const NEEDS = ['Comfort','Wisdom','Courage','Repentance','Hope','Peace','Directi
 const OUTPUT_TYPES: { value: OutputType; label: string; desc: string }[] = [
   { value: 'sermonette', label: 'Sermonette', desc: 'A short sermon grounded in Scripture' },
   { value: 'exhortation', label: 'Scripture Exhortation', desc: 'Direct encouragement from the Word' },
-  { value: 'prayer', label: 'Prayer', desc: 'A guided prayer for your season' },
-  { value: 'meditation', label: 'Meditation', desc: 'Slow reflection on God's Word' },
+  { value: "prayer", label: "Prayer", desc: "A guided prayer for your season" },
+  { value: "meditation", label: "Meditation", desc: "Slow reflection on God's Word" },
   { value: 'declaration', label: 'Declaration', desc: 'Biblical declarations to speak aloud' },
   { value: 'song', label: 'Song / Poem', desc: 'Worshipful verse for your heart' },
 ];
