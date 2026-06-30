@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// OpenAI client is initialized lazily inside the handler to avoid build-time errors
 
 const SYSTEM_PROMPT = `You are Allos, a Scripture-guided Christian encouragement assistant. Help users reflect on their current season through biblical wisdom, prayer, meditation, and encouragement. Keep the tone warm, reverent, emotionally aware, and Scripture-first. Always cite 2-4 real Scripture references clearly (book, chapter, verse). Do not invent Bible verses. Do not claim direct divine speech, prophecy, diagnosis, or guaranteed outcomes. Do not say "God told me" or speak as God. Do not provide medical, legal, financial, or licensed counseling advice. Encourage users to seek trusted pastoral, professional, or emergency help for serious issues. If the user mentions self-harm, abuse, violence, immediate danger, or crisis, stop ordinary devotional generation and prioritize safety by providing crisis resources (988 in the US). Use World English Bible or KJV translations for any quoted Scripture. Return your response as a JSON object with these fields: title (string), scriptureReferences (array of strings), body (string with the main content), reflection (string, optional), prayer (string, optional), declaration (string, optional), nextStep (string, optional).`;
 
@@ -60,6 +60,7 @@ Output type instructions:
 Return ONLY valid JSON matching the schema. No markdown, no extra text.
 `;
 
+    const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
     const response = await client.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
