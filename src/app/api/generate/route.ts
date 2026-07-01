@@ -1,12 +1,10 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 
 // Rate limit: 5 generations per RATE_WINDOW_HOURS hours per user (free plan)
 const RATE_LIMIT_FREE = 5;
 const RATE_WINDOW_HOURS = 3;
-// Pro plan users get more headroom
 const RATE_LIMIT_PRO = 50;
 
 const client = () => new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -19,24 +17,29 @@ function getSupabaseAdmin() {
   );
 }
 
-async function getUserFromCookies(): Promise<string | null> {
+function getUserIdFromRequest(request: Request): string | null {
   try {
-    const cookieStore = cookies();
+    const cookieHeader = request.headers.get('cookie') || '';
     const projectRef = process.env.NEXT_PUBLIC_SUPABASE_URL!.replace('https://', '').split('.')[0];
+    const cookies: Record<string, string> = {};
+    cookieHeader.split(';').forEach(part => {
+      const [k, ...v] = part.trim().split('=');
+      if (k) cookies[k.trim()] = decodeURIComponent(v.join('='));
+    });
     let tokenJson = '';
     let i = 0;
     while (true) {
-      const chunk = cookieStore.get('sb-' + projectRef + '-auth-token.' + i);
-      if (!chunk) break;
-      tokenJson += chunk.value;
+      const key = `sb-${projectRef}-auth-token.${i}`;
+      if (!cookies[key]) break;
+      tokenJson += cookies[key];
       i++;
     }
     if (!tokenJson) {
-      const single = cookieStore.get('sb-' + projectRef + '-auth-token');
-      if (single) tokenJson = single.value;
+      const single = cookies[`sb-${projectRef}-auth-token`];
+      if (single) tokenJson = single;
     }
     if (!tokenJson) return null;
-    const session = JSON.parse(decodeURIComponent(tokenJson));
+    const session = JSON.parse(tokenJson);
     const accessToken = session.access_token;
     if (!accessToken) return null;
     const payload = JSON.parse(atob(accessToken.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
@@ -80,8 +83,6 @@ const LENGTH_MAP: Record<string, string> = {
   Deep: 'Deep and full — 380-500 words total.',
 };
 
-export const runtime = 'edge';
-
 export async function POST(request: Request) {
   try {
     const { mood, struggle, lifeChallenge, spiritualNeed, format, tone, length } = await request.json();
@@ -91,39 +92,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ content: CRISIS_RESPONSE });
     }
 
-    // Auth check and rate limiting
-    const userId = await getUserFromCookies();
+    // Auth check and rate limiting — reads cookie directly from request headers (edge-safe)
+    const userId = getUserIdFromRequest(request);
     if (userId) {
       const supabase = getSupabaseAdmin();
-
-      // Get user plan
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('plan')
-        .eq('id', userId)
-        .single();
+      const { data: profile } = await supabase.from('profiles').select('plan').eq('id', userId).single();
       const plan = profile?.plan || 'free';
       const rateLimit = plan === 'pro' ? RATE_LIMIT_PRO : RATE_LIMIT_FREE;
-
-      // Count generations in the current window using journey_entries
       const windowStart = new Date(Date.now() - RATE_WINDOW_HOURS * 60 * 60 * 1000).toISOString();
       const { count, error: countError } = await supabase
         .from('journey_entries')
         .select('id', { count: 'exact', head: true })
         .eq('user_id', userId)
         .gte('created_at', windowStart);
-
       if (!countError && count !== null && count >= rateLimit) {
         const resetAt = new Date(Date.now() + RATE_WINDOW_HOURS * 60 * 60 * 1000);
         const resetHour = resetAt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
         return NextResponse.json(
-          {
-            error: 'rate_limited',
-            message: `You've used your ${rateLimit} sessions for this window. Come back after ${resetHour} to continue your journey.`,
-            resetAt: resetAt.toISOString(),
-            limit: rateLimit,
-            windowHours: RATE_WINDOW_HOURS,
-          },
+          { error: 'rate_limited', message: `You've used your ${rateLimit} sessions for this window. Come back after ${resetHour} to continue your journey.`, resetAt: resetAt.toISOString(), limit: rateLimit, windowHours: RATE_WINDOW_HOURS },
           { status: 429 }
         );
       }
@@ -156,7 +142,6 @@ ${lengthDesc}
 Scripture references must be real WEB or KJV verses, quoted accurately in plain text.`;
 
     const ai = client();
-
     const stream = await ai.messages.stream({
       model: 'claude-opus-4-5',
       max_tokens: 800,
@@ -165,15 +150,11 @@ Scripture references must be real WEB or KJV verses, quoted accurately in plain 
     });
 
     const encoder = new TextEncoder();
-
     const readable = new ReadableStream({
       async start(controller) {
         try {
           for await (const chunk of stream) {
-            if (
-              chunk.type === 'content_block_delta' &&
-              chunk.delta.type === 'text_delta'
-            ) {
+            if (chunk.type === 'content_block_delta' && chunk.delta.type === 'text_delta') {
               const data = JSON.stringify({ text: chunk.delta.text });
               controller.enqueue(encoder.encode(`data: ${data}\n\n`));
             }
