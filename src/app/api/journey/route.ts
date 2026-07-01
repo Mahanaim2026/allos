@@ -64,7 +64,7 @@ export async function POST(request: Request) {
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const body = await request.json();
     const { title, content, mood, struggle, lifeChallenge, spiritualNeed, outputType, tone, length, notes } = body;
-    const entryTitle = title || (mood ? mood + ' — ' : '') + new Date().toLocaleDateString();
+    const entryTitle = title || (mood ? mood + ' â ' : '') + new Date().toLocaleDateString();
     const supabase = getSupabaseAdmin();
     const { data, error } = await supabase
       .from('journey_entries')
@@ -87,6 +87,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ entry: data });
   } catch (error) {
     console.error('Journey POST error:', error);
-    return NextResponse.json({ error: 'Failed to save entry' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to save entry', detail: String(error) }, { status: 500 });
   }
 }
