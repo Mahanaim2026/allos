@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Spectral, Hanken_Grotesk } from 'next/font/google';
+import './globals.css';
 
 const spectral = Spectral({
   subsets: ['latin'],
@@ -35,7 +36,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${spectral.variable} ${hanken.variable}`}>
-      <body style={{ margin: 0, padding: 0 }}>
+      <body>
         {children}
       </body>
     </html>
