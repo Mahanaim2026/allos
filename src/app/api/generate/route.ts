@@ -9,12 +9,9 @@ const CRISIS_KEYWORDS = [
 ];
 
 const CRISIS_RESPONSE = `Your safety matters deeply. Please reach out right now:
-
 National Suicide & Crisis Lifeline: Call or text 988 (US)
 Crisis Text Line: Text HOME to 741741
-
 You are not alone. Please talk to someone you trust, or go to your nearest emergency room if you are in immediate danger.
-
 Allos cannot provide crisis support — but real help is available, and you are worth it.`;
 
 const TONE_MAP: Record<string, string> = {
@@ -40,6 +37,8 @@ const LENGTH_MAP: Record<string, string> = {
   Deep: 'Deep and full — 380-500 words total.',
 };
 
+export const runtime = 'edge';
+
 export async function POST(request: Request) {
   try {
     const { mood, struggle, lifeChallenge, spiritualNeed, format, tone, length } = await request.json();
@@ -52,10 +51,8 @@ export async function POST(request: Request) {
     const toneDesc = TONE_MAP[tone] || TONE_MAP['Gentle'];
     const formatDesc = FORMAT_MAP[format] || FORMAT_MAP['Prayer'];
     const lengthDesc = LENGTH_MAP[length] || LENGTH_MAP['Medium'];
-    const formatName = format || 'Prayer';
 
     const systemPrompt = `You are Allos — a Scripture-guided Christian encouragement companion. You speak with warmth, wisdom, and reverence.
-
 CRITICAL OUTPUT RULES — READ CAREFULLY:
 1. Output PLAIN TEXT only. Do NOT use any markdown: no asterisks (*), no bold (**text**), no italics (*text*), no hashtags (#), no bullet dashes (-), no backticks, no headers.
 2. For Scripture quotes, write them naturally inline: use only straight quotation marks and the reference in parentheses after.
@@ -63,7 +60,6 @@ CRITICAL OUTPUT RULES — READ CAREFULLY:
 4. For declarations, number them: "1. I am..." on its own line.
 5. For a poem/song, use line breaks naturally. No asterisks for emphasis — let the words carry the weight.
 6. Never use markdown formatting of any kind.
-
 SAFETY RULES:
 - Never invent or paraphrase Bible verses as if they are direct quotes. Only quote verses that genuinely exist.
 - Only use World English Bible (WEB) or KJV translations.
@@ -72,26 +68,46 @@ SAFETY RULES:
 - Never shame the user.`;
 
     const userPrompt = `The user is in this season: ${inputText}.
-
 Open with a single sentence that mirrors their season back to them — e.g. "You are carrying [mood/struggle/challenge], and the Word speaks directly into that."
-
 Then write ${formatDesc}.
-
 Tone: ${toneDesc}.
 ${lengthDesc}
-
 Scripture references must be real WEB or KJV verses, quoted accurately in plain text.`;
 
     const ai = client();
-    const message = await ai.messages.create({
+
+    const stream = await ai.messages.stream({
       model: 'claude-opus-4-5',
       max_tokens: 800,
       messages: [{ role: 'user', content: userPrompt }],
       system: systemPrompt,
     });
 
-    const content = message.content[0].type === 'text' ? message.content[0].text : 'Unable to generate a response.';
-    return NextResponse.json({ content });
+    const encoder = new TextEncoder();
+
+    const readable = new ReadableStream({
+      async start(controller) {
+        for await (const chunk of stream) {
+          if (
+            chunk.type === 'content_block_delta' &&
+            chunk.delta.type === 'text_delta'
+          ) {
+            const data = JSON.stringify({ text: chunk.delta.text });
+            controller.enqueue(encoder.encode(`data: ${data}\n\n`));
+          }
+        }
+        controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+        controller.close();
+      },
+    });
+
+    return new Response(readable, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+      },
+    });
   } catch (error: unknown) {
     console.error('Generate error:', error);
     const message = error instanceof Error ? error.message : 'An error occurred generating your response.';
