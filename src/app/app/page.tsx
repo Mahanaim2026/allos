@@ -98,16 +98,6 @@ function LoadingScreen() {
     }, 4500);
     return () => clearInterval(timer);
   }, []);
-
-  useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (user) {
-        const { count } = await supabase.from('journey_entries').select('*', { count: 'exact', head: true }).eq('user_id', user.id);
-        if (count !== null) setJourneyCount(count);
-      }
-    });
-  }, [saved]);
   const msg = WAITING_MESSAGES[msgIdx];
   return (
     <div style={{ textAlign: 'center', padding: '72px 24px' }}>
@@ -193,6 +183,16 @@ export default function AppPage() {
       }
     });
   }, []);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (user) {
+        const { count } = await supabase.from('journey_entries').select('*', { count: 'exact', head: true }).eq('user_id', user.id);
+        if (count !== null) setJourneyCount(count);
+      }
+    });
+  }, [saved]);
 
   const generate = async () => {
     setLoading(true);
