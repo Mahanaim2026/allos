@@ -12,7 +12,7 @@ const FORMATS = ['Sermonette','Scripture exhortation','Prayer','Meditation','Dec
 const TONES = ['Gentle','Pastoral','Bold','Reflective','Prophetic'];
 const LENGTHS = ['Short','Medium','Deep'];
 
-// Render plain text with paragraph breaks as clean HTML Ã¢ÂÂ no markdown symbols
+// Render plain text with paragraph breaks as clean HTML ÃÂ¢ÃÂÃÂ no markdown symbols
 function renderOutput(text: string) {
   if (!text) return null;
   // Strip any residual markdown symbols just in case
@@ -78,7 +78,7 @@ const WAITING_MESSAGES = [
   { text: 'Be still, and know that I am God.', ref: 'Psalm 46:10' },
   { text: 'Those who wait upon the Lord shall renew their strength.', ref: 'Isaiah 40:31' },
   { text: 'In quietness and trust is your strength.', ref: 'Isaiah 30:15' },
-  { text: 'The Lord your God is in your midst — He will quiet you with His love.', ref: 'Zephaniah 3:17' },
+  { text: 'The Lord your God is in your midst â He will quiet you with His love.', ref: 'Zephaniah 3:17' },
   { text: 'Come to Me, all who are weary, and I will give you rest.', ref: 'Matthew 11:28' },
   { text: 'Cast all your anxiety on Him, for He cares for you.', ref: '1 Peter 5:7' },
   { text: 'The Word of God is living and active.', ref: 'Hebrews 4:12' },
@@ -112,7 +112,7 @@ function LoadingScreen() {
           &ldquo;{msg.text}&rdquo;
         </p>
         <p style={{ fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '0.82rem', color: '#C8943F', letterSpacing: '0.04em' }}>
-          — {msg.ref}
+          â {msg.ref}
         </p>
       </div>
       <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 36 }}>
@@ -192,7 +192,7 @@ export default function AppPage() {
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mood, struggle, lifeChallenge: life, spiritualNeed: spirit, format, tone, length }),
+        body: JSON.stringify({ mood, struggle, lifeChallenge: life, spiritualNeed: spirit, outputType: format, tone, length, content: result }),
       });
       const data = await res.json();
       setResult(data.content || data.error || 'Something went wrong. Please try again.');
@@ -216,7 +216,7 @@ export default function AppPage() {
   };
 
   const shareWhatsApp = () => {
-    const text = encodeURIComponent('From Allos Ã¢ÂÂ ' + format + ':\n\n' + result.substring(0, 500) + '...\n\nhttps://www.word2go.com');
+    const text = encodeURIComponent('From Allos ÃÂ¢ÃÂÃÂ ' + format + ':\n\n' + result.substring(0, 500) + '...\n\nhttps://www.word2go.com');
     window.open('https://wa.me/?text=' + text, '_blank');
   };
 
@@ -259,8 +259,8 @@ export default function AppPage() {
         <div style={{ marginBottom: 26 }}>{LABEL('A STRUGGLE')}<div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>{STRUGGLES.map(s => CHIP(s, struggle === s, () => setStruggle(struggle === s ? '' : s)))}</div></div>
         <div style={{ marginBottom: 26 }}>{LABEL('LIFE CHALLENGE')}<div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>{LIFE.map(l => CHIP(l, life === l, () => setLife(life === l ? '' : l)))}</div></div>
         <div style={{ marginBottom: 32 }}>{LABEL('SPIRITUAL NEED')}<div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>{SPIRIT.map(s => CHIP(s, spirit === s, () => setSpirit(spirit === s ? '' : s)))}</div></div>
-        <button onClick={() => setStep(2)} disabled={!mood && !struggle && !life && !spirit}
-          style={{ width: '100%', padding: '14px', background: (!mood && !struggle && !life && !spirit) ? '#DBE5EE' : '#1B3A57', color: (!mood && !struggle && !life && !spirit) ? '#54677A' : '#F6F9FB', border: 'none', borderRadius: '100px', fontSize: '0.95rem', fontWeight: 600, cursor: (!mood && !struggle && !life && !spirit) ? 'not-allowed' : 'pointer' }}>
+        <button onClick={() => setStep(2)} 
+          style={{ width: '100%', padding: '14px', background: '#1B3A57', color: '#F6F9FB', border: 'none', borderRadius: '100px', fontSize: '0.95rem', fontWeight: 600, cursor: (!mood && !struggle && !life && !spirit) ? 'not-allowed' : 'pointer' }}>
           Continue
         </button>
       </div>
@@ -291,7 +291,7 @@ export default function AppPage() {
     </div>
   );
 
-  // STEP 3 Ã¢ÂÂ Result
+  // STEP 3 ÃÂ¢ÃÂÃÂ Result
   return (
     <div style={{ minHeight: '100vh', background: '#F6F9FB' }}>
       {NAV}
@@ -305,7 +305,7 @@ export default function AppPage() {
               {[mood, struggle, life, spirit].filter(Boolean).map(t => (
                 <span key={t} style={{ background: '#E8F0F7', color: '#1B3A57', padding: '4px 12px', borderRadius: '100px', fontSize: '0.78rem', fontWeight: 500, border: '1px solid #DBE5EE' }}>{t}</span>
               ))}
-              <span style={{ background: '#C8943F', color: '#fff', padding: '4px 12px', borderRadius: '100px', fontSize: '0.78rem', fontWeight: 600 }}>{format}</span>
+              <span style={{ background: '#6E9CC4', color: '#fff', padding: '4px 12px', borderRadius: '100px', fontSize: '0.78rem', fontWeight: 600 }}>{format}</span>
               <span style={{ background: '#2C5573', color: '#F6F9FB', padding: '4px 12px', borderRadius: '100px', fontSize: '0.78rem', fontWeight: 500 }}>{tone}</span>
             </div>
 
@@ -318,15 +318,31 @@ export default function AppPage() {
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 14 }}>
               <button onClick={saveJourney} disabled={saved}
                 style={{ flex: '1 1 150px', padding: '12px 16px', background: saved ? '#E8F0F7' : '#1B3A57', color: saved ? '#54677A' : '#F6F9FB', border: 'none', borderRadius: '100px', fontSize: '0.875rem', fontWeight: 600, cursor: saved ? 'default' : 'pointer', minHeight: 44 }}>
-                {saved ? 'â Saved' : 'Save to Journey'}
+                {saved ? 'Saved ✓' : 'Save to Journey'}
               </button>
               <button onClick={reset}
                 style={{ flex: '1 1 120px', padding: '12px 16px', background: 'transparent', color: '#1B3A57', border: '1px solid #DBE5EE', borderRadius: '100px', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer', minHeight: 44 }}>
                 New season
               </button>
             </div>
+            {saved && (
+              <div style={{ textAlign: 'center', marginBottom: 8 }}>
+                <a href="/journey" style={{ fontSize: '0.85rem', color: '#6E9CC4', textDecoration: 'none', fontWeight: 500, fontFamily: 'Hanken Grotesk, sans-serif' }}>
+                  View in Journey →
+                </a>
+              </div>
+            )}
 
-            {/* SHARE BUTTONS */}
+            
+            {/* REFLECT PROMPT */}
+            {result && (
+              <div style={{ background: '#E8F0F7', borderRadius: 14, padding: '16px 20px', marginBottom: 16 }}>
+                <p style={{ fontFamily: "'Spectral', Georgia, serif", fontStyle: 'italic', fontSize: '0.95rem', color: '#2C5573', margin: 0, lineHeight: 1.6 }}>
+                  “What word or phrase from this speaks most to you right now?”
+                </p>
+              </div>
+            )}
+{/* SHARE BUTTONS */}
             <div style={{ borderTop: '1px solid #DBE5EE', paddingTop: 16 }}>
               <p style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase', color: '#6E9CC4', margin: '0 0 12px' }}>SHARE</p>
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
@@ -354,8 +370,8 @@ export default function AppPage() {
 
                 {/* Email */}
                 <button onClick={() => {
-                  const subject = encodeURIComponent('A word for my season Ã¢ÂÂ from Allos');
-                  const body = encodeURIComponent(format + '\n\n' + result + '\n\nGenerated by Allos Ã¢ÂÂ https://www.word2go.com');
+                  const subject = encodeURIComponent('A word for my season ÃÂ¢ÃÂÃÂ from Allos');
+                  const body = encodeURIComponent(format + '\n\n' + result + '\n\nGenerated by Allos ÃÂ¢ÃÂÃÂ https://www.word2go.com');
                   window.open('mailto:?subject=' + subject + '&body=' + body);
                 }}
                   style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '10px 18px', background: '#F6F9FB', border: '1px solid #DBE5EE', borderRadius: '100px', fontSize: '0.83rem', fontWeight: 500, cursor: 'pointer', color: '#1B3A57', minHeight: 44 }}>
