@@ -65,22 +65,7 @@ export async function POST(request: Request) {
 
     const supabase = getSupabaseAdmin();
 
-    // Ensure all required columns exist (add if missing from older table versions)
-    await supabase.rpc('exec_sql', {
-      sql: `
-        DO $$ BEGIN
-          BEGIN ALTER TABLE journey_entries ADD COLUMN IF NOT EXISTS content text; EXCEPTION WHEN OTHERS THEN NULL; END;
-          BEGIN ALTER TABLE journey_entries ADD COLUMN IF NOT EXISTS notes text; EXCEPTION WHEN OTHERS THEN NULL; END;
-          BEGIN ALTER TABLE journey_entries ADD COLUMN IF NOT EXISTS life_challenge text; EXCEPTION WHEN OTHERS THEN NULL; END;
-          BEGIN ALTER TABLE journey_entries ADD COLUMN IF NOT EXISTS spiritual_need text; EXCEPTION WHEN OTHERS THEN NULL; END;
-          BEGIN ALTER TABLE journey_entries ADD COLUMN IF NOT EXISTS output_type text DEFAULT 'sermonette'; EXCEPTION WHEN OTHERS THEN NULL; END;
-          BEGIN ALTER TABLE journey_entries ADD COLUMN IF NOT EXISTS tone text DEFAULT 'pastoral'; EXCEPTION WHEN OTHERS THEN NULL; END;
-          BEGIN ALTER TABLE journey_entries ADD COLUMN IF NOT EXISTS length text DEFAULT 'medium'; EXCEPTION WHEN OTHERS THEN NULL; END;
-          BEGIN ALTER TABLE journey_entries ADD COLUMN IF NOT EXISTS is_favourite boolean DEFAULT false; EXCEPTION WHEN OTHERS THEN NULL; END;
-        END $$;
-      `
-    }).catch(() => {/* ignore if exec_sql RPC doesn't exist */});
-
+    
     // Insert with only core columns first
     const insertData: Record<string, unknown> = {
       user_id: userId,
