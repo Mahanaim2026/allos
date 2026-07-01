@@ -1,184 +1,181 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { createClient } from '@supabase/supabase-js';
-import { NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 
-// Rate limit: 5 generations per RATE_WINDOW_HOURS hours per user (free plan)
-const RATE_LIMIT_FREE = 5;
-const RATE_WINDOW_HOURS = 3;
-const RATE_LIMIT_PRO = 50;
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
 
-const client = () => new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
-function getSupabaseAdmin() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  );
-}
-
-function getUserIdFromRequest(request: Request): string | null {
+// ─── Auth helper: read Supabase session from request cookie (Node.js runtime) ──
+async function getUserIdFromRequest(request: Request): Promise<string | null> {
   try {
     const cookieHeader = request.headers.get('cookie') || '';
-    const projectRef = process.env.NEXT_PUBLIC_SUPABASE_URL!.replace('https://', '').split('.')[0];
-    const cookies: Record<string, string> = {};
-    cookieHeader.split(';').forEach(part => {
-      const [k, ...v] = part.trim().split('=');
-      if (k) cookies[k.trim()] = decodeURIComponent(v.join('='));
-    });
-    let tokenJson = '';
-    let i = 0;
-    while (true) {
-      const key = `sb-${projectRef}-auth-token.${i}`;
-      if (!cookies[key]) break;
-      tokenJson += cookies[key];
-      i++;
-    }
-    if (!tokenJson) {
-      const single = cookies[`sb-${projectRef}-auth-token`];
-      if (single) tokenJson = single;
-    }
-    if (!tokenJson) return null;
-    const session = JSON.parse(tokenJson);
-    const accessToken = session.access_token;
+    const match = cookieHeader.match(/sb-[^=]+-auth-token=([^;]+)/);
+    if (!match) return null;
+    const tokenRaw = decodeURIComponent(match[1]);
+    const tokenData = JSON.parse(tokenRaw);
+    const accessToken = Array.isArray(tokenData) ? tokenData[0] : tokenData?.access_token;
     if (!accessToken) return null;
-    const payload = JSON.parse(atob(accessToken.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-    return payload.sub || null;
+    const { data: { user }, error } = await supabaseAdmin.auth.getUser(accessToken);
+    if (error || !user) return null;
+    return user.id;
   } catch {
     return null;
   }
 }
 
-const CRISIS_KEYWORDS = [
-  'suicide', 'kill myself', 'end my life', 'want to die', 'self-harm',
-  'cut myself', 'abuse', 'being abused', 'hurt myself', 'no reason to live'
-];
+// ─── Rate limit check ──────────────────────────────────────────────────────────
+async function checkRateLimit(userId: string): Promise<{ allowed: boolean; resetAt?: Date; remaining?: number }> {
+  const windowMs = 3 * 60 * 60 * 1000;
+  const windowStart = new Date(Date.now() - windowMs).toISOString();
 
-const CRISIS_RESPONSE = `Your safety matters deeply. Please reach out right now:
-National Suicide & Crisis Lifeline: Call or text 988 (US)
-Crisis Text Line: Text HOME to 741741
-You are not alone. Please talk to someone you trust, or go to your nearest emergency room if you are in immediate danger.
-Allos cannot provide crisis support — but real help is available, and you are worth it.`;
+  const { data: profile } = await supabaseAdmin
+    .from('profiles')
+    .select('plan')
+    .eq('id', userId)
+    .single();
 
-const TONE_MAP: Record<string, string> = {
-  Gentle: 'warm, tender, quietly encouraging — like a trusted friend speaking softly',
-  Pastoral: 'pastoral and shepherding — like a wise elder guiding a congregation',
-  Bold: 'bold and direct — speaking truth with conviction and holy confidence',
-  Reflective: 'contemplative and meditative — inviting stillness and deep inner reflection',
-  Prophetic: 'prophetic and Spirit-led — speaking with spiritual authority and urgency, calling the reader forward',
-};
+  const plan = profile?.plan || 'free';
+  const limit = plan === 'pro' ? 50 : 5;
 
-const FORMAT_MAP: Record<string, string> = {
-  'Prayer': 'a heartfelt conversational prayer addressed directly to God, incorporating the user inputs naturally',
-  'Sermonette': 'a short devotional sermonette (3-5 paragraphs): open with a Scripture, apply it to the season, close with hope',
-  'Scripture exhortation': 'a direct Scripture-based exhortation: quote 2-3 relevant Bible verses, then briefly speak to each one in light of the season',
-  'Meditation': 'a slow, contemplative meditation: invite the reader into stillness, speak gently through one key Scripture passage',
-  'Declaration': 'a series of first-person faith declarations (I am / I have / I will) grounded in specific Scripture references',
-  'Song / Poem': 'a short worshipful poem or song lyric (3-4 stanzas) that flows naturally, reflecting the mood and Scripture',
-};
+  const { count } = await supabaseAdmin
+    .from('journey_entries')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .gte('created_at', windowStart);
 
-const LENGTH_MAP: Record<string, string> = {
-  Short: 'Keep it brief — 120-180 words total.',
-  Medium: 'Medium length — 220-320 words total.',
-  Deep: 'Deep and full — 380-500 words total.',
-};
+  const used = count ?? 0;
 
-export async function POST(request: Request) {
-  try {
-    const { mood, struggle, lifeChallenge, spiritualNeed, format, tone, length } = await request.json();
-    const inputText = [mood, struggle, lifeChallenge, spiritualNeed].filter(Boolean).join(', ');
+  if (used >= limit) {
+    const { data: oldest } = await supabaseAdmin
+      .from('journey_entries')
+      .select('created_at')
+      .eq('user_id', userId)
+      .gte('created_at', windowStart)
+      .order('created_at', { ascending: true })
+      .limit(1)
+      .single();
 
-    if (CRISIS_KEYWORDS.some(k => inputText.toLowerCase().includes(k))) {
-      return NextResponse.json({ content: CRISIS_RESPONSE });
-    }
+    const resetAt = oldest
+      ? new Date(new Date(oldest.created_at).getTime() + windowMs)
+      : new Date(Date.now() + windowMs);
 
-    // Auth check and rate limiting — reads cookie directly from request headers (edge-safe)
-    const userId = getUserIdFromRequest(request);
-    if (userId) {
-      const supabase = getSupabaseAdmin();
-      const { data: profile } = await supabase.from('profiles').select('plan').eq('id', userId).single();
-      const plan = profile?.plan || 'free';
-      const rateLimit = plan === 'pro' ? RATE_LIMIT_PRO : RATE_LIMIT_FREE;
-      const windowStart = new Date(Date.now() - RATE_WINDOW_HOURS * 60 * 60 * 1000).toISOString();
-      const { count, error: countError } = await supabase
-        .from('journey_entries')
-        .select('id', { count: 'exact', head: true })
-        .eq('user_id', userId)
-        .gte('created_at', windowStart);
-      if (!countError && count !== null && count >= rateLimit) {
-        const resetAt = new Date(Date.now() + RATE_WINDOW_HOURS * 60 * 60 * 1000);
-        const resetHour = resetAt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-        return NextResponse.json(
-          { error: 'rate_limited', message: `You've used your ${rateLimit} sessions for this window. Come back after ${resetHour} to continue your journey.`, resetAt: resetAt.toISOString(), limit: rateLimit, windowHours: RATE_WINDOW_HOURS },
-          { status: 429 }
-        );
-      }
-    }
-
-    const toneDesc = TONE_MAP[tone] || TONE_MAP['Gentle'];
-    const formatDesc = FORMAT_MAP[format] || FORMAT_MAP['Prayer'];
-    const lengthDesc = LENGTH_MAP[length] || LENGTH_MAP['Medium'];
-
-    const systemPrompt = `You are Allos — a Scripture-guided Christian encouragement companion. You speak with warmth, wisdom, and reverence.
-CRITICAL OUTPUT RULES — READ CAREFULLY:
-1. Output PLAIN TEXT only. Do NOT use any markdown: no asterisks (*), no bold (**text**), no italics (*text*), no hashtags (#), no bullet dashes (-), no backticks, no headers.
-2. For Scripture quotes, write them naturally inline: use only straight quotation marks and the reference in parentheses after.
-3. Use paragraph breaks (double newline) to separate sections.
-4. For declarations, number them: "1. I am..." on its own line.
-5. For a poem/song, use line breaks naturally. No asterisks for emphasis — let the words carry the weight.
-6. Never use markdown formatting of any kind.
-SAFETY RULES:
-- Never invent or paraphrase Bible verses as if they are direct quotes. Only quote verses that genuinely exist.
-- Only use World English Bible (WEB) or KJV translations.
-- Never claim to speak as God or claim direct divine revelation.
-- Never diagnose, prescribe, or give medical/legal/financial advice.
-- Never shame the user.`;
-
-    const userPrompt = `The user is in this season: ${inputText}.
-Open with a single sentence that mirrors their season back to them — e.g. "You are carrying [mood/struggle/challenge], and the Word speaks directly into that."
-Then write ${formatDesc}.
-Tone: ${toneDesc}.
-${lengthDesc}
-Scripture references must be real WEB or KJV verses, quoted accurately in plain text.`;
-
-    const ai = client();
-    const stream = await ai.messages.stream({
-      model: 'claude-opus-4-5',
-      max_tokens: 800,
-      messages: [{ role: 'user', content: userPrompt }],
-      system: systemPrompt,
-    });
-
-    const encoder = new TextEncoder();
-    const readable = new ReadableStream({
-      async start(controller) {
-        try {
-          for await (const chunk of stream) {
-            if (chunk.type === 'content_block_delta' && chunk.delta.type === 'text_delta') {
-              const data = JSON.stringify({ text: chunk.delta.text });
-              controller.enqueue(encoder.encode(`data: ${data}\n\n`));
-            }
-          }
-          controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-          controller.close();
-        } catch (streamError) {
-          const errMsg = streamError instanceof Error ? streamError.message : 'Stream interrupted';
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: errMsg })}\n\n`));
-          controller.close();
-        }
-      },
-    });
-
-    return new Response(readable, {
-      headers: {
-        'Content-Type': 'text/event-stream; charset=utf-8',
-        'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
-      },
-    });
-  } catch (error: unknown) {
-    console.error('Generate error:', error);
-    const message = error instanceof Error ? error.message : 'An error occurred generating your response.';
-    return NextResponse.json({ error: message }, { status: 500 });
+    return { allowed: false, resetAt };
   }
+
+  return { allowed: true, remaining: limit - used };
+}
+
+export async function POST(request: NextRequest) {
+  // ─── Auth wall: guests must sign up to generate ───────────────────────────────
+  const userId = await getUserIdFromRequest(request);
+  if (!userId) {
+    return new Response(
+      JSON.stringify({
+        error: 'unauthenticated',
+        message: 'Create a free account to receive your first scripture passage.',
+      }),
+      { status: 401, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
+
+  // ─── Rate limit ───────────────────────────────────────────────────────────────
+  const rateCheck = await checkRateLimit(userId);
+  if (!rateCheck.allowed) {
+    const resetAt = rateCheck.resetAt!;
+    return new Response(
+      JSON.stringify({
+        error: 'rate_limited',
+        message: "You've reached your session limit.",
+        resetAt: resetAt.toISOString(),
+      }),
+      { status: 429, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
+
+  // ─── Parse body ───────────────────────────────────────────────────────────────
+  let body: {
+    mood?: string; struggle?: string; life?: string; spirit?: string;
+    format?: string; tone?: string; length?: string;
+  };
+  try {
+    body = await request.json();
+  } catch {
+    return new Response(JSON.stringify({ error: 'invalid_json' }), { status: 400 });
+  }
+
+  const { mood, struggle, life, spirit, format = 'Prayer', tone = 'Gentle', length = 'Medium' } = body;
+
+  const lengthGuide =
+    length === 'Short' ? '150-200 words' :
+    length === 'Deep'  ? '500-700 words' :
+                         '300-400 words';
+
+  const prompt = `You are a gifted Christian pastor and writer. Write a deeply personal, scripture-grounded ${format.toLowerCase()} for someone who is feeling ${mood || 'in need of God'}.${struggle ? ` They are wrestling with ${struggle}.` : ''}${life ? ` Their life context: ${life}.` : ''}${spirit ? ` They are seeking ${spirit}.` : ''} Tone: ${tone}. Length: ${lengthGuide}. Begin with a relevant scripture reference in full (book, chapter:verse). Avoid clichés. Write with warmth, depth, and spiritual authority. Do not use markdown formatting.`;
+
+  // ─── Stream response ──────────────────────────────────────────────────────────
+  const encoder = new TextEncoder();
+  let fullText = '';
+
+  const stream = new ReadableStream({
+    async start(controller) {
+      try {
+        const response = await anthropic.messages.create({
+          model: 'claude-haiku-4-5',
+          max_tokens: length === 'Deep' ? 1200 : length === 'Short' ? 500 : 800,
+          stream: true,
+          messages: [{ role: 'user', content: prompt }],
+        });
+
+        for await (const event of response) {
+          if (
+            event.type === 'content_block_delta' &&
+            event.delta.type === 'text_delta'
+          ) {
+            const chunk = event.delta.text;
+            fullText += chunk;
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: chunk })}
+
+`));
+          }
+        }
+
+        if (fullText.trim()) {
+          await supabaseAdmin.from('journey_entries').insert({
+            user_id: userId,
+            mood: mood || null,
+            struggle: struggle || null,
+            life_context: life || null,
+            spiritual_need: spirit || null,
+            format,
+            tone,
+            length_pref: length,
+            content: fullText.trim(),
+          });
+        }
+
+        controller.enqueue(encoder.encode('data: [DONE]
+
+'));
+        controller.close();
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Unknown error';
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: msg })}
+
+`));
+        controller.close();
+      }
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      Connection: 'keep-alive',
+    },
+  });
 }
