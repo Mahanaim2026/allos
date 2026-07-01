@@ -62,8 +62,8 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const body = await request.json();
     const updates: Record<string, unknown> = {};
-    if (body.notes !== undefined) updates.notes = body.notes;
-    if (body.is_favourite !== undefined) updates.is_favourite = body.is_favourite;
+    // notes column not in this table schema - skip
+    if (body.favorite !== undefined) updates.favorite = body.favorite;
     if (body.title !== undefined) updates.title = body.title;
     if (Object.keys(updates).length === 0) {
       return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 });
