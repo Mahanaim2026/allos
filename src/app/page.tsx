@@ -19,32 +19,32 @@ return (
     <div style={{ fontFamily: "'Hanken Grotesk', system-ui, sans-serif", background: '#F6F9FB', color: '#1B3A57', minHeight: '100vh' }}>
 
       {/* NAV */}
-      <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 32px', borderBottom: '1px solid #DBE5EE', background: '#F6F9FB', position: 'sticky', top: 0, zIndex: 50 }}>
+      <nav className="allos-nav" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 32px', borderBottom: '1px solid #DBE5EE', background: '#F6F9FB', position: 'sticky', top: 0, zIndex: 50 }}>
         <AllosLogo size={36} variant="light" showWordmark />
-        <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+        <div className="allos-nav-right" style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
           <Link href="/auth/login" style={{ color: '#54677A', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500 }}>Sign in</Link>
           <Link href="/auth/signup" style={{ background: '#1B3A57', color: '#F6F9FB', padding: '10px 22px', borderRadius: '100px', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 600 }}>Begin a season</Link>
         </div>
       </nav>
 
       {/* HERO */}
-      <section style={{ maxWidth: 1100, margin: '0 auto', padding: '80px 32px 64px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'center' }}>
+      <section className="allos-hero-grid" style={{ maxWidth: 1100, margin: '0 auto', padding: '80px 32px 64px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'center' }}>
         <div>
           <p style={{ fontFamily: "'Hanken Grotesk'", fontSize: '0.78rem', fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase', color: '#6E9CC4', marginBottom: 20, margin: '0 0 20px' }}>SCRIPTURE-GUIDED ENCOURAGEMENT</p>
-          <h1 style={{ fontFamily: "'Spectral', Georgia, serif", fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 300, lineHeight: 1.25, color: '#1B3A57', margin: '0 0 24px', maxWidth: 480 }}>
+          <h1 style={{ fontFamily: "'Spectral', Georgia, serif", fontSize: 'clamp(26px, 5vw, 44px)', fontWeight: 300, lineHeight: 1.25, color: '#1B3A57', margin: '0 0 24px', maxWidth: 480 }}>
             Bring your heart before the Word. Receive encouragement for the season you&apos;re walking through.
           </h1>
           <p style={{ color: '#54677A', fontSize: '1.05rem', lineHeight: 1.7, maxWidth: 420, margin: '0 0 36px' }}>
             Allos is a Scripture-guided companion. Share your mood, struggle, or spiritual need â and receive Bible-grounded prayer, meditation, sermonette, or declaration.
           </p>
-          <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
             <Link href="/auth/signup" style={{ background: '#1B3A57', color: '#F6F9FB', padding: '14px 28px', borderRadius: '100px', textDecoration: 'none', fontSize: '0.925rem', fontWeight: 600, display: 'inline-block' }}>Begin a season</Link>
             <Link href="/app" style={{ border: '1px solid #DBE5EE', color: '#1B3A57', padding: '14px 28px', borderRadius: '100px', textDecoration: 'none', fontSize: '0.925rem', fontWeight: 500, display: 'inline-block' }}>Try as guest</Link>
           </div>
         </div>
 
         {/* MARK DISPLAY */}
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <div className="allos-hero-mark" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
           <div style={{ background: '#1B3A57', borderRadius: '50%', width: 160, height: 160, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 24px 64px rgba(27,58,87,0.18)' }}>
             <AllosLogo size={80} variant="dark" />
           </div>
