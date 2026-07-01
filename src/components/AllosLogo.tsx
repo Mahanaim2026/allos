@@ -2,48 +2,120 @@ import React from 'react';
 
 interface AllosLogoProps {
   size?: number;
-  variant?: 'light' | 'dark' | 'mono';
+  variant?: 'light' | 'dark' | 'baby-blue' | 'outline';
   showWordmark?: boolean;
   className?: string;
 }
 
-export default function AllosLogo({ size = 40, variant = 'light', showWordmark = false, className = '' }: AllosLogoProps) {
-  const body = variant === 'dark' ? '#F0F5FA' : '#0F2B45';
-  const gold = variant === 'dark' ? '#D4A44C' : '#B8832A';
-  const pages = variant === 'dark' ? 'rgba(240,245,250,0.18)' : 'rgba(15,43,69,0.10)';
+/**
+ * Allos compass mark — "One mark, four meanings"
+ * The letter A / North arrow / Compass / Season marker
+ * Flat, no shadows, no gradients. Four variants:
+ *   light     — navy mark on white/transparent (default)
+ *   dark      — white mark on transparent (use on navy bg)
+ *   baby-blue — navy mark on baby-blue bg circle
+ *   outline   — stroke-only navy ring
+ */
+export default function AllosLogo({
+  size = 40,
+  variant = 'light',
+  showWordmark = false,
+  className = '',
+}: AllosLogoProps) {
+  // Colour system — brand guide: navy #0A2342, baby blue #A8C5E0, white #FFFFFF
+  const navy  = '#0A2342';
+  const baby  = '#A8C5E0';
+  const white = '#FFFFFF';
 
-  const mark = (
-    <svg viewBox="0 0 120 120" width={size} height={size} fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Allos — Bible and Cross">
-      {/* Bible body */}
-      <rect x="22" y="32" width="62" height="72" rx="5" fill={body} opacity="0.12"/>
-      <rect x="22" y="32" width="62" height="72" rx="5" stroke={body} strokeWidth="3.5"/>
-      {/* Bible spine */}
-      <rect x="22" y="32" width="9" height="72" rx="4" fill={body} opacity="0.25"/>
-      {/* Bible pages */}
-      <rect x="32" y="32" width="52" height="72" rx="3" fill={pages}/>
-      {/* Page lines */}
-      <line x1="38" y1="60" x2="78" y2="60" stroke={body} strokeWidth="2" strokeLinecap="round" opacity="0.35"/>
-      <line x1="38" y1="70" x2="70" y2="70" stroke={body} strokeWidth="2" strokeLinecap="round" opacity="0.35"/>
-      <line x1="38" y1="80" x2="74" y2="80" stroke={body} strokeWidth="2" strokeLinecap="round" opacity="0.35"/>
-      {/* Cross vertical */}
-      <rect x="53" y="16" width="14" height="56" rx="3" fill={gold}/>
-      {/* Cross horizontal */}
-      <rect x="40" y="30" width="40" height="13" rx="3" fill={gold}/>
+  const mark  = variant === 'dark' ? white : navy;     // the compass ink
+  const bg    = variant === 'baby-blue' ? baby : 'none'; // circle fill
+
+  // Stroke width scaled to viewBox (100×100)
+  const sw = 3.2;      // outer ring & ticks
+  const aw = 3.8;      // A strokes (slightly bolder for legibility)
+
+  // Compass geometry — all in 100×100 space, centre = (50,50)
+  // Outer ring
+  const R = 42;        // ring radius
+
+  // 8 tick marks: from inner to outer radius
+  // Cardinal (N/S/E/W) ticks: longer
+  const tickInC  = 35.5; // inner end of cardinal tick
+  const tickOutC = 42;   // outer end (touches ring)
+  // Diagonal ticks: shorter
+  const tickInD  = 38;
+  const tickOutD = 42;
+
+  // Helper: point on circle at angle (degrees, 0=top/north)
+  const pt = (r: number, deg: number) => {
+    const rad = (deg - 90) * Math.PI / 180;
+    return { x: 50 + r * Math.cos(rad), y: 50 + r * Math.sin(rad) };
+  };
+
+  // Build 8 tick lines
+  const ticks = [0, 45, 90, 135, 180, 225, 270, 315].map(deg => {
+    const isCard = deg % 90 === 0;
+    const inner  = isCard ? tickInC : tickInD;
+    const a = pt(inner, deg);
+    const b = pt(tickOutC, deg);
+    return <line key={deg} x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke={mark} strokeWidth={sw} strokeLinecap="round" />;
+  });
+
+  // "A" letterform — the A sits inside the ring, peak at top (north)
+  // Peak = (50, 14) — inside the ring opening at north tick
+  // Left foot = (34, 54), Right foot = (66, 54)
+  // Crossbar = (38.5, 42.5) to (61.5, 42.5)
+  // The north tick gap is left open so the A peak appears to pierce through
+  const Apeak = { x: 50, y: 14.5 };
+  const Aleft  = { x: 33.5, y: 55 };
+  const Aright = { x: 66.5, y: 55 };
+  const Xbar_l = { x: 39.5, y: 43 };
+  const Xbar_r = { x: 60.5, y: 43 };
+
+  const mark_svg = (
+    <svg
+      viewBox="0 0 100 100"
+      width={size}
+      height={size}
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-label="Allos compass mark"
+      style={{ display: 'block', flexShrink: 0 }}
+    >
+      {/* Background circle (baby-blue variant only) */}
+      {bg !== 'none' && <circle cx="50" cy="50" r="50" fill={bg} />}
+
+      {/* Outer compass ring */}
+      <circle cx="50" cy="50" r={R} stroke={mark} strokeWidth={sw} />
+
+      {/* 8 tick marks */}
+      {ticks}
+
+      {/* "A" — left leg */}
+      <line x1={Apeak.x} y1={Apeak.y} x2={Aleft.x}  y2={Aright.y} stroke={mark} strokeWidth={aw} strokeLinecap="round" />
+      {/* "A" — right leg */}
+      <line x1={Apeak.x} y1={Apeak.y} x2={Aright.x} y2={Aright.y} stroke={mark} strokeWidth={aw} strokeLinecap="round" />
+      {/* "A" — crossbar */}
+      <line x1={Xbar_l.x} y1={Xbar_l.y} x2={Xbar_r.x} y2={Xbar_r.y} stroke={mark} strokeWidth={aw} strokeLinecap="round" />
     </svg>
   );
 
-  if (!showWordmark) return <span className={className}>{mark}</span>;
+  if (!showWordmark) return <span className={className} style={{ display: 'inline-flex', alignItems: 'center' }}>{mark_svg}</span>;
 
   return (
-    <span className={"flex items-center gap-2 " + className}>
-      {mark}
+    <span
+      className={"flex items-center " + className}
+      style={{ display: 'inline-flex', alignItems: 'center', gap: Math.round(size * 0.28) }}
+    >
+      {mark_svg}
       <span style={{
         fontFamily: "'Spectral', Georgia, serif",
-        fontSize: size * 0.6,
+        fontSize:   Math.round(size * 0.58),
         fontWeight: 400,
-        color: variant === 'dark' ? '#F0F5FA' : '#0F2B45',
+        color:      variant === 'dark' ? white : navy,
         letterSpacing: '-0.01em',
-        lineHeight: 1
+        lineHeight: 1,
+        userSelect: 'none',
       }}>
         Allos
       </span>
