@@ -203,10 +203,40 @@ export default function AppPage() {
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mood, struggle, lifeChallenge: life, spiritualNeed: spirit, outputType: format, tone, length, content: result }),
+        body: JSON.stringify({ mood, struggle, lifeChallenge: life, spiritualNeed: spirit, format, tone, length }),
       });
-      const data = await res.json();
-      setResult(data.content || data.error || 'Something went wrong. Please try again.');
+      if (!res.ok || !res.body) {
+        const err = await res.json().catch(() => ({}));
+        setResult(err.error || 'Something went wrong. Please try again.');
+        setLoading(false);
+        return;
+      }
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let accumulated = '';
+      let done = false;
+      while (!done) {
+        const { value, done: streamDone } = await reader.read();
+        done = streamDone;
+        if (value) {
+          const chunk = decoder.decode(value, { stream: true });
+          const lines = chunk.split('\n');
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const data = line.slice(6).trim();
+              if (data === '[DONE]') { done = true; break; }
+              try {
+                const parsed = JSON.parse(data);
+                if (parsed.text) {
+                  accumulated += parsed.text;
+                  setResult(accumulated);
+                }
+              } catch {}
+            }
+          }
+        }
+      }
+      if (!accumulated) setResult('Something went wrong. Please try again.');
     } catch {
       setResult('Network error. Please check your connection and try again.');
     }
