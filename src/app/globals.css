@@ -1,62 +1,69 @@
-/* Allos Global Styles */
+/* Allos Global Styles — Redesign 2026: High-Contrast White Palette */
 *, *::before, *::after { box-sizing: border-box; }
+
+:root {
+  /* ── Palette ──────────────────────────────────────── */
+  --c-bg:        #FFFFFF;      /* page background — true white */
+  --c-bg-tint:   #F0F5FA;      /* section tint — very light blue */
+  --c-surface:   #FFFFFF;      /* card / input surface */
+  --c-border:    #C8D8E8;      /* borders */
+  --c-border-lt: #DDE8F0;      /* lighter borders */
+
+  --c-text:      #0F2B45;      /* primary text — deep navy */
+  --c-text-2:    #3D5166;      /* secondary text */
+  --c-text-3:    #5C7A94;      /* muted / placeholder */
+  --c-label:     #4A7299;      /* all-caps section labels */
+
+  --c-gold:      #B8832A;      /* accent gold — one per view */
+  --c-navy:      #0F2B45;      /* dark fills, CTAs */
+  --c-navy-2:    #16395E;      /* slightly lighter navy */
+  --c-navy-deep: #071E30;      /* footer bg */
+
+  --c-link:      #2B6CB0;      /* inline links */
+  --c-chip-sel:  #0F2B45;      /* selected chip bg */
+  --c-chip-txt:  #FFFFFF;      /* selected chip text */
+}
 
 html { -webkit-text-size-adjust: 100%; }
 
 body {
   margin: 0;
   padding: 0;
+  background: var(--c-bg);
+  color: var(--c-text);
   font-family: var(--font-hanken), 'Hanken Grotesk', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  font-size: 16px;
+  line-height: 1.6;
 }
 
-/* ─── Responsive Layout Utilities ─────────────────── */
-
-.allos-container {
-  width: 100%;
-  max-width: 680px;
-  margin: 0 auto;
-  padding: 28px 20px;
-}
-
+/* ─── Nav ──────────────────────────────────────────── */
 .allos-nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 14px 24px;
-  border-bottom: 1px solid #DBE5EE;
-  background: #F6F9FB;
+  border-bottom: 1px solid var(--c-border-lt);
+  background: var(--c-bg);
   position: sticky;
   top: 0;
   z-index: 50;
+  box-shadow: 0 1px 0 var(--c-border-lt);
 }
 
 .allos-nav-right {
   display: flex;
   align-items: center;
   gap: 20px;
-  font-size: 0.82rem;
+  font-size: 0.85rem;
 }
 
-.allos-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.allos-share-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
-}
-
-.allos-result-card {
-  background: #fff;
-  border-radius: 16px;
-  border: 1px solid #DBE5EE;
-  padding: 36px 40px;
-  margin-bottom: 28px;
+/* ─── Layout ───────────────────────────────────────── */
+.allos-container {
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 28px 20px;
 }
 
 .allos-hero-grid {
@@ -69,86 +76,68 @@ body {
   align-items: center;
 }
 
+/* ─── Cards ────────────────────────────────────────── */
+.allos-result-card {
+  background: var(--c-surface);
+  border-radius: 16px;
+  border: 1px solid var(--c-border);
+  padding: 36px 40px;
+  margin-bottom: 28px;
+  box-shadow: 0 2px 12px rgba(15,43,69,0.06);
+}
+
 .allos-entry-card {
-  background: #fff;
+  background: var(--c-surface);
   border-radius: 12px;
-  border: 1px solid #DBE5EE;
+  border: 1px solid var(--c-border-lt);
   padding: 24px 28px;
-  margin-bottom: 16px;
+  margin-bottom: 0;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.allos-entry-card:hover {
+  border-color: var(--c-border);
+  box-shadow: 0 3px 14px rgba(15,43,69,0.09);
+}
+
+/* ─── Chips ────────────────────────────────────────── */
+.allos-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ─── Share row ────────────────────────────────────── */
+.allos-share-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
 }
 
 /* ─── Mobile (< 640px) ────────────────────────────── */
 @media (max-width: 639px) {
-  .allos-container {
-    padding: 20px 16px;
-  }
-
-  .allos-nav {
-    padding: 12px 16px;
-  }
-
-  .allos-nav-right {
-    gap: 10px;
-    font-size: 0.78rem;
-  }
-
-  .allos-nav-greeting {
-    display: none;
-  }
-
-  .allos-result-card {
-    padding: 24px 18px;
-    border-radius: 12px;
-  }
-
-  .allos-share-row {
-    gap: 8px;
-  }
-  .allos-share-row > button {
-    flex: 1 1 calc(50% - 4px);
-    min-width: 0;
-    justify-content: center;
-  }
-  .allos-share-whatsapp {
-    flex: 1 1 100% !important;
-    width: 100%;
-  }
-
-  .allos-hero-grid {
-    grid-template-columns: 1fr !important;
-    gap: 28px;
-    padding: 40px 20px 36px;
-  }
-
-  .allos-hero-mark {
-    display: none;
-  }
-
-  .allos-entry-card {
-    padding: 16px 14px;
-    border-radius: 10px;
-  }
+  .allos-container { padding: 20px 16px; }
+  .allos-nav { padding: 12px 16px; }
+  .allos-nav-right { gap: 10px; font-size: 0.78rem; }
+  .allos-nav-greeting { display: none; }
+  .allos-result-card { padding: 24px 18px; border-radius: 12px; }
+  .allos-share-row { gap: 8px; }
+  .allos-share-row > button { flex: 1 1 calc(50% - 4px); min-width: 0; justify-content: center; }
+  .allos-share-whatsapp { flex: 1 1 100% !important; width: 100%; }
+  .allos-hero-grid { grid-template-columns: 1fr !important; gap: 28px; padding: 40px 20px 36px; }
+  .allos-hero-mark { display: none; }
+  .allos-entry-card { padding: 16px 14px; border-radius: 10px; }
 }
 
 /* ─── Tablet (640-1023px) ─────────────────────────── */
 @media (min-width: 640px) and (max-width: 1023px) {
-  .allos-container {
-    padding: 24px 20px;
-  }
-
-  .allos-hero-grid {
-    gap: 40px;
-    padding: 60px 24px 48px;
-  }
-
-  .allos-result-card {
-    padding: 28px 32px;
-  }
+  .allos-container { padding: 24px 20px; }
+  .allos-hero-grid { gap: 40px; padding: 60px 24px 48px; }
+  .allos-result-card { padding: 28px 32px; }
 }
 
 /* ─── Wide Desktop (>= 1280px) ───────────────────── */
 @media (min-width: 1280px) {
-  .allos-container {
-    max-width: 720px;
-  }
+  .allos-container { max-width: 720px; }
 }
