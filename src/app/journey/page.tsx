@@ -99,7 +99,7 @@ export default function JourneyPage() {
         </div>
       </header>
 
-      <div style={{ maxWidth: 600, margin: '0 auto', padding: '40px 24px 80px' }}>
+      <div style={{ maxWidth: 680, margin: '0 auto', padding: '28px 20px 80px' }}>
         {/* Page heading */}
         <div style={{ marginBottom: 32 }}>
           <div style={{ fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase', color: '#6E9CC4', marginBottom: 8, fontFamily: 'Hanken Grotesk, sans-serif' }}>Your journey</div>
