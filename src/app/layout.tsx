@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Allos — Scripture for the Season You\'re In',
+  title: 'Allos â Scripture for the Season You\'re In',
   description: 'Bring your heart before the Word. Receive Bible-grounded encouragement for the season you\'re walking through.',
   keywords: ['scripture', 'Bible', 'prayer', 'devotional', 'Christian', 'encouragement'],
   openGraph: {
@@ -13,7 +13,12 @@ export const metadata: Metadata = {
     type: 'website',
   },
   themeColor: '#1B3A57',
-  viewport: { width: 'device-width', initialScale: 1 },
+  viewport: { width: 'device-width', initialScale: 1 },,
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+    ],
+  }
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
