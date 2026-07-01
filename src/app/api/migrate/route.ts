@@ -1,31 +1,39 @@
-import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      { auth: { autoRefreshToken: false, persistSession: false } }
-    );
-
-    // Add missing columns via individual INSERT tries to detect actual schema
-    const testResult: string[] = [];
-
-    // Try to find actual columns by attempting inserts
-    const { error: e1 } = await supabase
-      .from('journey_entries')
-      .insert({ user_id: '00000000-0000-0000-0000-000000000000', title: '_schema_test', content: '_test' })
-      .select();
-    testResult.push('content column: ' + (e1 ? e1.message : 'exists'));
-
-    const { error: e2 } = await supabase
-      .from('journey_entries')
-      .insert({ user_id: '00000000-0000-0000-0000-000000000000', title: '_schema_test2', output_type: 'test' })
-      .select();
-    testResult.push('output_type: ' + (e2 ? e2.message : 'exists'));
-
-    return NextResponse.json({ testResult });
+    const projectRef = 'jppcqzmuujqlvabwylzw';
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+    
+    // Use Supabase Management API to run SQL
+    // This requires a Management API token (personal access token), not service role key
+    // Instead, use the REST API workaround: create missing columns via a raw query
+    
+    // Use the postgres RPC approach via the REST API with service role
+    const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+    
+    const sqls = [
+      'ALTER TABLE journey_entries ADD COLUMN IF NOT EXISTS content text',
+      'ALTER TABLE journey_entries ADD COLUMN IF NOT EXISTS notes text',
+    ];
+    
+    const results = [];
+    for (const sql of sqls) {
+      // Use Supabase's pg endpoint
+      const res = await fetch(baseUrl + '/rest/v1/rpc/exec_sql', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': serviceKey,
+          'Authorization': 'Bearer ' + serviceKey,
+        },
+        body: JSON.stringify({ sql }),
+      });
+      const data = await res.json();
+      results.push({ sql: sql.substring(0, 60), status: res.status, data: JSON.stringify(data).substring(0,100) });
+    }
+    
+    return NextResponse.json({ results });
   } catch (err) {
     return NextResponse.json({ error: String(err) }, { status: 500 });
   }
