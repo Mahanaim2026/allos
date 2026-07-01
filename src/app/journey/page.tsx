@@ -124,7 +124,7 @@ export default function JourneyPage() {
 
         {!loading && !error && entries.length === 0 && (
           <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #DBE5EE', padding: 48, textAlign: 'center' }}>
-            <div style={{ fontSize: 40, marginBottom: 16 }}>â¦</div>
+            <div style={{ fontSize: 40, marginBottom: 16 }}>Ã¢ÂÂ¦</div>
             <p style={{ fontFamily: "'Spectral', Georgia, serif", color: '#1B3A57', fontSize: '1.15rem', marginBottom: 8 }}>Your journey begins here</p>
             <p style={{ color: '#54677A', fontSize: '0.9rem', marginBottom: 24, lineHeight: 1.6 }}>Save your first encounter with Scripture to see it here.</p>
             <Link href="/app" style={{ display: 'inline-block', background: '#1B3A57', color: '#F6F9FB', borderRadius: 100, padding: '10px 24px', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 600, fontFamily: 'Hanken Grotesk, sans-serif' }}>Begin a season</Link>
@@ -138,7 +138,7 @@ export default function JourneyPage() {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 6 }}>
                     {entry.mood && <span style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6E9CC4', fontFamily: 'Hanken Grotesk, sans-serif' }}>{entry.mood}</span>}
-                    {entry.output_type && <span style={{ fontSize: '0.72rem', color: '#54677A', fontFamily: 'Hanken Grotesk, sans-serif' }}>Â· {entry.output_type}</span>}
+                    {entry.output_type && <span style={{ fontSize: '0.72rem', color: '#54677A', fontFamily: 'Hanken Grotesk, sans-serif' }}>ÃÂ· {entry.output_type}</span>}
                   </div>
                   <Link href={'/entry/' + entry.id} style={{ textDecoration: 'none' }}>
                     <h3 style={{ fontFamily: "'Spectral', Georgia, serif", fontSize: '1.05rem', fontWeight: 500, color: '#1B3A57', margin: '0 0 6px', lineHeight: 1.3 }}>{entry.title}</h3>
@@ -146,7 +146,7 @@ export default function JourneyPage() {
                   <p style={{ fontSize: '0.82rem', color: '#54677A', margin: 0, fontFamily: 'Hanken Grotesk, sans-serif' }}>{formatDate(entry.created_at)}</p>
                   {entry.generated_text && (
                     <p style={{ fontSize: '0.85rem', color: '#2C5573', marginTop: 8, fontStyle: 'italic', lineHeight: 1.5, fontFamily: "'Spectral', Georgia, serif" }}>
-                      "{entry.notes.substring(0, 120)}{entry.notes.length > 120 ? '...' : ''}"
+                      "{(entry.generated_text || "").substring(0, 120)}{(entry.generated_text || "").length > 120 ? '...' : ''}"
                     </p>
                   )}
                 </div>
@@ -155,7 +155,7 @@ export default function JourneyPage() {
                   title={entry.favorite ? 'Remove from favourites' : 'Add to favourites'}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: entry.favorite ? '#C8943F' : '#DBE5EE', flexShrink: 0, padding: '0 4px' }}
                 >
-                  {entry.favorite ? 'â' : 'â'}
+                  {entry.favorite ? 'Ã¢ÂÂ' : 'Ã¢ÂÂ'}
                 </button>
               </div>
             ))}
