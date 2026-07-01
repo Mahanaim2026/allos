@@ -271,9 +271,9 @@ export default function AppPage() {
   const greeting = userName ? 'Welcome back, ' + userName : (userEmail ? 'Welcome back' : '');
 
   const NAV = (
-    <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 24px', borderBottom: '1px solid #DBE5EE', background: '#F6F9FB', position: 'sticky', top: 0, zIndex: 50 }}>
+    <nav className="allos-nav" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #DBE5EE', background: '#F6F9FB', position: 'sticky', top: 0, zIndex: 50 }}>
       <Link href="/" style={{ textDecoration: 'none' }}><AllosLogo size={30} variant="light" showWordmark /></Link>
-      <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+      <div className="allos-nav-right" style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
         {greeting && <span style={{ color: '#54677A', fontSize: '0.85rem', fontWeight: 500 }}>{greeting}</span>}
         <Link href="/journey" style={{ color: '#54677A', fontSize: '0.82rem', textDecoration: 'none', fontWeight: 500 }}>{journeyCount !== null && journeyCount > 0 ? `Journey (${journeyCount})` : 'Journey'}</Link>
         {userName ? (
@@ -290,16 +290,16 @@ export default function AppPage() {
   if (step === 1) return (
     <div style={{ minHeight: '100vh', background: '#F6F9FB' }}>
       {NAV}
-      <div style={{ maxWidth: 640, margin: '0 auto', padding: '36px 24px' }}>
+      <div className="allos-container" style={{ margin: '0 auto' }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           {LABEL('YOUR SEASON')}
-          <h1 style={{ fontFamily: "'Spectral', Georgia, serif", fontSize: 'clamp(22px, 3vw, 28px)', fontWeight: 300, color: '#1B3A57', margin: '0 0 8px', lineHeight: 1.3 }}>What are you carrying right now?</h1>
+          <h1 style={{ fontFamily: "'Spectral', Georgia, serif", fontSize: 'clamp(22px, 5vw, 30px)', fontWeight: 300, color: '#1B3A57', margin: '0 0 8px', lineHeight: 1.3 }}>What are you carrying right now?</h1>
           <p style={{ color: '#54677A', fontSize: '0.88rem', margin: 0 }}>Select what feels most true. Nothing is required.</p>
         </div>
-        <div style={{ marginBottom: 26 }}>{LABEL('MY MOOD')}<div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>{MOODS.map(m => CHIP(m, mood === m, () => setMood(mood === m ? '' : m)))}</div></div>
-        <div style={{ marginBottom: 26 }}>{LABEL('A STRUGGLE')}<div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>{STRUGGLES.map(s => CHIP(s, struggle === s, () => setStruggle(struggle === s ? '' : s)))}</div></div>
-        <div style={{ marginBottom: 26 }}>{LABEL('LIFE CHALLENGE')}<div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>{LIFE.map(l => CHIP(l, life === l, () => setLife(life === l ? '' : l)))}</div></div>
-        <div style={{ marginBottom: 32 }}>{LABEL('SPIRITUAL NEED')}<div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>{SPIRIT.map(s => CHIP(s, spirit === s, () => setSpirit(spirit === s ? '' : s)))}</div></div>
+        <div style={{ marginBottom: 26 }}>{LABEL('MY MOOD')}<div className="allos-chips" style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>{MOODS.map(m => CHIP(m, mood === m, () => setMood(mood === m ? '' : m)))}</div></div>
+        <div style={{ marginBottom: 26 }}>{LABEL('A STRUGGLE')}<div className="allos-chips" style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>{STRUGGLES.map(s => CHIP(s, struggle === s, () => setStruggle(struggle === s ? '' : s)))}</div></div>
+        <div style={{ marginBottom: 26 }}>{LABEL('LIFE CHALLENGE')}<div className="allos-chips" style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>{LIFE.map(l => CHIP(l, life === l, () => setLife(life === l ? '' : l)))}</div></div>
+        <div style={{ marginBottom: 32 }}>{LABEL('SPIRITUAL NEED')}<div className="allos-chips" style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>{SPIRIT.map(s => CHIP(s, spirit === s, () => setSpirit(spirit === s ? '' : s)))}</div></div>
         <button onClick={() => setStep(2)} 
           style={{ width: '100%', padding: '14px', background: '#1B3A57', color: '#F6F9FB', border: 'none', borderRadius: '100px', fontSize: '0.95rem', fontWeight: 600, cursor: (!mood && !struggle && !life && !spirit) ? 'not-allowed' : 'pointer' }}>
           Continue
@@ -312,7 +312,7 @@ export default function AppPage() {
   if (step === 2) return (
     <div style={{ minHeight: '100vh', background: '#F6F9FB' }}>
       {NAV}
-      <div style={{ maxWidth: 640, margin: '0 auto', padding: '36px 24px' }}>
+      <div className="allos-container" style={{ margin: '0 auto' }}>
         <button onClick={() => setStep(1)} style={{ background: 'none', border: 'none', color: '#54677A', cursor: 'pointer', fontSize: '0.85rem', marginBottom: 20, padding: 0 }}>{'<'} Back</button>
         <div style={{ background: '#E8F0F7', border: '1px solid #DBE5EE', borderRadius: 14, padding: '14px 18px', marginBottom: 28 }}>
           {LABEL('YOUR SEASON')}
@@ -322,9 +322,9 @@ export default function AppPage() {
             ))}
           </div>
         </div>
-        <div style={{ marginBottom: 24 }}>{LABEL('OUTPUT FORMAT')}<div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>{FORMATS.map(f => CHIP(f, format === f, () => setFormat(f)))}</div></div>
-        <div style={{ marginBottom: 24 }}>{LABEL('TONE')}<div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>{TONES.map(t => CHIP(t, tone === t, () => setTone(t)))}</div></div>
-        <div style={{ marginBottom: 32 }}>{LABEL('DEPTH')}<div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>{LENGTHS.map(l => CHIP(l, length === l, () => setLength(l)))}</div></div>
+        <div style={{ marginBottom: 24 }}>{LABEL('OUTPUT FORMAT')}<div className="allos-chips" style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>{FORMATS.map(f => CHIP(f, format === f, () => setFormat(f)))}</div></div>
+        <div style={{ marginBottom: 24 }}>{LABEL('TONE')}<div className="allos-chips" style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>{TONES.map(t => CHIP(t, tone === t, () => setTone(t)))}</div></div>
+        <div style={{ marginBottom: 32 }}>{LABEL('DEPTH')}<div className="allos-chips" style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>{LENGTHS.map(l => CHIP(l, length === l, () => setLength(l)))}</div></div>
         <button onClick={generate} style={{ width: '100%', padding: '14px', background: '#1B3A57', color: '#F6F9FB', border: 'none', borderRadius: '100px', fontSize: '0.95rem', fontWeight: 600, cursor: 'pointer' }}>
           Receive the Word
         </button>
@@ -351,12 +351,12 @@ export default function AppPage() {
             </div>
 
             {/* RESULT CARD */}
-            <div style={{ background: '#fff', border: '1px solid #DBE5EE', borderRadius: 20, padding: '32px 28px', boxShadow: '0 4px 24px rgba(27,58,87,0.07)', marginBottom: 20 }}>
+            <div className="allos-result-card" style={{ background: '#fff', border: '1px solid #DBE5EE', borderRadius: 20, padding: '32px 28px', boxShadow: '0 4px 24px rgba(27,58,87,0.07)', marginBottom: 20 }}>
               {renderOutput(result)}
             </div>
 
             {/* ACTION BUTTONS */}
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 14 }}>
+            <div className="allos-share-row" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 14 }}>
               <button onClick={saveJourney} disabled={saved}
                 style={{ flex: '1 1 150px', padding: '12px 16px', background: saved ? '#E8F0F7' : '#1B3A57', color: saved ? '#54677A' : '#F6F9FB', border: 'none', borderRadius: '100px', fontSize: '0.875rem', fontWeight: 600, cursor: saved ? 'default' : 'pointer', minHeight: 44 }}>
                 {saved ? 'Saved ✓' : 'Save to Journey'}
@@ -397,6 +397,7 @@ export default function AppPage() {
 
                 {/* WhatsApp */}
                 <button onClick={shareWhatsApp}
+                  className="allos-share-whatsapp"
                   style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 24px', background: '#25D366', border: 'none', borderRadius: '100px', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer', color: '#fff', minHeight: 44 }}>
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
                   WhatsApp
