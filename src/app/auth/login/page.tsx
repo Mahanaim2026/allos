@@ -13,68 +13,52 @@ export default function LoginPage() {
   const router = useRouter();
   const supabase = createClient();
 
-  // If already logged in, redirect to app
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) router.replace('/app');
-    });
+    supabase.auth.getUser().then(({ data: { user } }) => { if (user) router.replace('/app'); });
   }, []);
 
   const signInGoogle = async () => {
     setLoading(true);
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: 'https://www.word2go.com/auth/callback' }
-    });
+    const { error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: 'https://www.word2go.com/auth/callback' } });
     if (error) { setMessage(error.message); setLoading(false); }
   };
 
   const signInEmail = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage('');
+    e.preventDefault(); setLoading(true); setMessage('');
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      setMessage(error.message);
-      setLoading(false);
-    } else {
-      router.push('/app');
-    }
+    if (error) { setMessage(error.message); setLoading(false); } else { router.push('/app'); }
   };
 
   const magicLink = async () => {
     if (!email) { setMessage('Enter your email address first.'); return; }
     setLoading(true);
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: 'https://www.word2go.com/auth/callback' }
-    });
-    setMessage(error ? error.message : 'Check your email — a sign-in link is on its way.');
+    const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: 'https://www.word2go.com/auth/callback' } });
+    setMessage(error ? error.message : 'Check your email \u2014 a sign-in link is on its way.');
     setLoading(false);
   };
 
   const inputStyle: React.CSSProperties = {
-    padding: '13px 16px', border: '1px solid #DBE5EE', borderRadius: 12,
-    fontSize: '0.9rem', outline: 'none', color: '#1B3A57', background: '#F6F9FB',
+    padding: '13px 16px', border: '1.5px solid #C8D8E8', borderRadius: 12,
+    fontSize: '0.9rem', outline: 'none', color: '#0F2B45', background: '#FFFFFF',
     width: '100%', boxSizing: 'border-box', fontFamily: 'inherit'
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F6F9FB', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+    <div style={{ minHeight: '100vh', background: '#F0F5FA', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
       <div style={{ width: '100%', maxWidth: 420 }}>
 
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#1B3A57', borderRadius: '50%', width: 72, height: 72, marginBottom: 16 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#0F2B45', borderRadius: '50%', width: 72, height: 72, marginBottom: 16 }}>
             <AllosLogo size={44} variant="dark" />
           </div>
-          <h1 style={{ fontFamily: "'Spectral', Georgia, serif", fontSize: '1.75rem', fontWeight: 400, color: '#1B3A57', margin: '0 0 6px' }}>Welcome back</h1>
-          <p style={{ color: '#54677A', fontSize: '0.9rem', margin: 0, fontStyle: 'italic', fontFamily: "'Spectral', Georgia, serif" }}>Scripture for the Season You&apos;re In</p>
+          <h1 style={{ fontFamily: "'Spectral', Georgia, serif", fontSize: '1.75rem', fontWeight: 400, color: '#0F2B45', margin: '0 0 6px' }}>Welcome back</h1>
+          <p style={{ color: '#3D5166', fontSize: '0.9rem', margin: 0, fontStyle: 'italic', fontFamily: "'Spectral', Georgia, serif" }}>Scripture for the Season You&apos;re In</p>
         </div>
 
-        <div style={{ background: '#fff', border: '1px solid #DBE5EE', borderRadius: 20, padding: '32px 28px', boxShadow: '0 4px 24px rgba(27,58,87,0.07)' }}>
+        <div style={{ background: '#FFFFFF', border: '1px solid #C8D8E8', borderRadius: 20, padding: '32px 28px', boxShadow: '0 4px 24px rgba(15,43,69,0.08)' }}>
 
           <button onClick={signInGoogle} disabled={loading}
-            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '13px 20px', border: '1px solid #DBE5EE', borderRadius: '100px', background: '#F6F9FB', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600, color: '#1B3A57', marginBottom: 20, minHeight: 48 }}>
+            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '13px 20px', border: '1.5px solid #C8D8E8', borderRadius: '100px', background: '#FFFFFF', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600, color: '#0F2B45', marginBottom: 20, minHeight: 48 }}>
             <svg width="18" height="18" viewBox="0 0 24 24">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
               <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -85,38 +69,38 @@ export default function LoginPage() {
           </button>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-            <div style={{ flex: 1, height: 1, background: '#DBE5EE' }}/>
-            <span style={{ color: '#54677A', fontSize: '0.8rem' }}>or sign in with email</span>
-            <div style={{ flex: 1, height: 1, background: '#DBE5EE' }}/>
+            <div style={{ flex: 1, height: 1, background: '#C8D8E8' }}/>
+            <span style={{ color: '#5C7A94', fontSize: '0.8rem' }}>or sign in with email</span>
+            <div style={{ flex: 1, height: 1, background: '#C8D8E8' }}/>
           </div>
 
           <form onSubmit={signInEmail} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <input type="email" placeholder="Email address" value={email} onChange={e => setEmail(e.target.value)} required style={inputStyle} />
             <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required style={inputStyle} />
             <button type="submit" disabled={loading}
-              style={{ padding: '13px', background: '#1B3A57', color: '#F6F9FB', border: 'none', borderRadius: '100px', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer', minHeight: 48, fontFamily: 'inherit' }}>
+              style={{ padding: '13px', background: '#0F2B45', color: '#FFFFFF', border: 'none', borderRadius: '100px', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer', minHeight: 48, fontFamily: 'inherit' }}>
               {loading ? 'Signing in...' : 'Sign in'}
             </button>
           </form>
 
           <button onClick={magicLink} disabled={loading}
-            style={{ width: '100%', marginTop: 12, padding: '10px', background: 'transparent', color: '#6E9CC4', border: 'none', cursor: 'pointer', fontSize: '0.85rem', textDecoration: 'underline', fontFamily: 'inherit' }}>
+            style={{ width: '100%', marginTop: 12, padding: '10px', background: 'transparent', color: '#4A7299', border: 'none', cursor: 'pointer', fontSize: '0.85rem', textDecoration: 'underline', fontFamily: 'inherit' }}>
             Send a magic link instead
           </button>
 
           {message && (
-            <p style={{ marginTop: 14, fontSize: '0.85rem', color: message.includes('Check your email') ? '#2C5573' : '#C8943F', textAlign: 'center', lineHeight: 1.5 }}>
+            <p style={{ marginTop: 14, fontSize: '0.85rem', color: message.includes('Check your email') ? '#1A3F5C' : '#B8832A', textAlign: 'center', lineHeight: 1.5 }}>
               {message}
             </p>
           )}
         </div>
 
-        <p style={{ textAlign: 'center', marginTop: 20, color: '#54677A', fontSize: '0.85rem' }}>
+        <p style={{ textAlign: 'center', marginTop: 20, color: '#3D5166', fontSize: '0.85rem' }}>
           No account?{' '}
-          <Link href="/auth/signup" style={{ color: '#6E9CC4', fontWeight: 600, textDecoration: 'none' }}>Create one free</Link>
+          <Link href="/auth/signup" style={{ color: '#2B6CB0', fontWeight: 600, textDecoration: 'none' }}>Create one free</Link>
         </p>
         <p style={{ textAlign: 'center', marginTop: 8 }}>
-          <Link href="/app" style={{ color: '#54677A', fontSize: '0.8rem', textDecoration: 'none' }}>Continue as guest</Link>
+          <Link href="/app" style={{ color: '#5C7A94', fontSize: '0.8rem', textDecoration: 'none' }}>Continue as guest</Link>
         </p>
       </div>
     </div>
