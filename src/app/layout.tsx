@@ -1,4 +1,20 @@
 import type { Metadata } from 'next';
+import { Spectral, Hanken_Grotesk } from 'next/font/google';
+
+const spectral = Spectral({
+  subsets: ['latin'],
+  weight: ['300', '400', '500'],
+  style: ['normal', 'italic'],
+  variable: '--font-spectral',
+  display: 'swap',
+});
+
+const hanken = Hanken_Grotesk({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-hanken',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: 'Allos — Scripture for the Season You\'re In',
@@ -18,12 +34,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
-      </head>
+    <html lang="en" className={`${spectral.variable} ${hanken.variable}`}>
       <body style={{ margin: 0, padding: 0 }}>
         {children}
       </body>
