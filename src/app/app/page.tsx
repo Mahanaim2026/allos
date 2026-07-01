@@ -98,6 +98,16 @@ function LoadingScreen() {
     }, 4500);
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (user) {
+        const { count } = await supabase.from('journey_entries').select('*', { count: 'exact', head: true }).eq('user_id', user.id);
+        if (count !== null) setJourneyCount(count);
+      }
+    });
+  }, [saved]);
   const msg = WAITING_MESSAGES[msgIdx];
   return (
     <div style={{ textAlign: 'center', padding: '72px 24px' }}>
@@ -157,7 +167,8 @@ export default function AppPage() {
   const [result, setResult] = useState('');
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [journeyCount, setJourneyCount] = useState<number | null>(null);
+        const [copied, setCopied] = useState(false);
   const [userName, setUserName] = useState('');
   const [userEmail, setUserEmail] = useState('');
 
@@ -234,7 +245,7 @@ export default function AppPage() {
       <Link href="/" style={{ textDecoration: 'none' }}><AllosLogo size={30} variant="light" showWordmark /></Link>
       <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
         {greeting && <span style={{ color: '#54677A', fontSize: '0.85rem', fontWeight: 500 }}>{greeting}</span>}
-        <Link href="/journey" style={{ color: '#54677A', fontSize: '0.82rem', textDecoration: 'none', fontWeight: 500 }}>Journey</Link>
+        <Link href="/journey" style={{ color: '#54677A', fontSize: '0.82rem', textDecoration: 'none', fontWeight: 500 }}>{journeyCount !== null && journeyCount > 0 ? `Journey (${journeyCount})` : 'Journey'}</Link>
         {userName ? (
           <button onClick={async () => { const s = createClient(); await s.auth.signOut(); window.location.href = '/'; }}
             style={{ background: 'none', border: 'none', color: '#54677A', fontSize: '0.82rem', cursor: 'pointer', padding: 0, fontWeight: 500 }}>Sign out</button>
