@@ -1,8 +1,21 @@
+'use client';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import AllosLogo from '@/components/AllosLogo';
 
 export default function Home() {
-  return (
+  
+  const router = useRouter();
+  const supabase = createClient();
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) router.replace('/app');
+    });
+  }, []);
+
+return (
     <div style={{ fontFamily: "'Hanken Grotesk', system-ui, sans-serif", background: '#F6F9FB', color: '#1B3A57', minHeight: '100vh' }}>
 
       {/* NAV */}
@@ -22,7 +35,7 @@ export default function Home() {
             Bring your heart before the Word. Receive encouragement for the season you&apos;re walking through.
           </h1>
           <p style={{ color: '#54677A', fontSize: '1.05rem', lineHeight: 1.7, maxWidth: 420, margin: '0 0 36px' }}>
-            Allos is a Scripture-guided companion. Share your mood, struggle, or spiritual need — and receive Bible-grounded prayer, meditation, sermonette, or declaration.
+            Allos is a Scripture-guided companion. Share your mood, struggle, or spiritual need â and receive Bible-grounded prayer, meditation, sermonette, or declaration.
           </p>
           <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
             <Link href="/auth/signup" style={{ background: '#1B3A57', color: '#F6F9FB', padding: '14px 28px', borderRadius: '100px', textDecoration: 'none', fontSize: '0.925rem', fontWeight: 600, display: 'inline-block' }}>Begin a season</Link>
@@ -38,15 +51,15 @@ export default function Home() {
         </div>
       </section>
 
-      {/* EYEBROW — THE NAME */}
+      {/* EYEBROW â THE NAME */}
       <section style={{ background: '#E8F0F7', borderTop: '1px solid #DBE5EE', borderBottom: '1px solid #DBE5EE', padding: '56px 32px' }}>
         <div style={{ maxWidth: 680, margin: '0 auto', textAlign: 'center' }}>
           <p style={{ fontFamily: "'Hanken Grotesk'", fontSize: '0.78rem', fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase', color: '#6E9CC4', marginBottom: 16 }}>THE NAME</p>
           <h2 style={{ fontFamily: "'Spectral', Georgia, serif", fontSize: 'clamp(22px, 2.8vw, 32px)', fontWeight: 300, color: '#1B3A57', margin: '0 0 20px', lineHeight: 1.3 }}>
-            Allos — Another Comforter
+            Allos â Another Comforter
           </h2>
           <p style={{ color: '#54677A', fontSize: '1.05rem', lineHeight: 1.75, margin: 0 }}>
-            In John 14, Jesus promised <em>allos parakletos</em> — another Helper, another Comforter. The same Greek word He used to describe the Holy Spirit. Allos is built on that same promise: that you are not alone in your season, and that the Word of God speaks directly into where you are.
+            In John 14, Jesus promised <em>allos parakletos</em> â another Helper, another Comforter. The same Greek word He used to describe the Holy Spirit. Allos is built on that same promise: that you are not alone in your season, and that the Word of God speaks directly into where you are.
           </p>
           <div style={{ marginTop: 28, fontFamily: "'Spectral', Georgia, serif", fontSize: '1.2rem', fontStyle: 'italic', color: '#6E9CC4' }}>
             &ldquo;I will not leave you as orphans; I will come to you.&rdquo;
@@ -61,9 +74,9 @@ export default function Home() {
         <h2 style={{ fontFamily: "'Spectral', Georgia, serif", fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 400, textAlign: 'center', color: '#1B3A57', margin: '0 0 48px' }}>Four steps. One season at a time.</h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 24 }}>
           {[
-            { n: '01', t: 'Name your season', d: 'Choose your mood, a struggle, a life challenge, or a spiritual need — whatever is most present right now.' },
+            { n: '01', t: 'Name your season', d: 'Choose your mood, a struggle, a life challenge, or a spiritual need â whatever is most present right now.' },
             { n: '02', t: 'Choose your format', d: 'Prayer, sermonette, meditation, declaration, exhortation, or a worshipful song or poem.' },
-            { n: '03', t: 'Receive the Word', d: 'Allos generates a Scripture-grounded response using real Bible passages — never invented verses.' },
+            { n: '03', t: 'Receive the Word', d: 'Allos generates a Scripture-grounded response using real Bible passages â never invented verses.' },
             { n: '04', t: 'Save to your Journey', d: 'Every response is saved to your personal Journey. Add reflections. Return to it. Grow.' },
           ].map((s) => (
             <div key={s.n} style={{ background: '#F6F9FB', border: '1px solid #DBE5EE', borderRadius: 16, padding: '28px 24px' }}>
@@ -79,7 +92,7 @@ export default function Home() {
       <section style={{ background: '#1B3A57', padding: '56px 32px', textAlign: 'center' }}>
         <h2 style={{ fontFamily: "'Spectral', Georgia, serif", fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 300, color: '#F6F9FB', margin: '0 0 12px' }}>Your season is not wasted.</h2>
         <p style={{ color: '#CFE0EE', fontSize: '1.05rem', marginBottom: 32, fontStyle: 'italic', fontFamily: "'Spectral', Georgia, serif" }}>The Word speaks into it.</p>
-        <Link href="/auth/signup" style={{ background: '#C8943F', color: '#fff', padding: '15px 32px', borderRadius: '100px', textDecoration: 'none', fontSize: '0.95rem', fontWeight: 600, display: 'inline-block' }}>Begin a season — it is free</Link>
+        <Link href="/auth/signup" style={{ background: '#F6F9FB', color: '#1B3A57', padding: '15px 32px', borderRadius: '100px', textDecoration: 'none', fontSize: '0.95rem', fontWeight: 600, display: 'inline-block' }}>Begin a season â it is free</Link>
       </section>
 
       {/* FOOTER */}
