@@ -83,3 +83,21 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     return NextResponse.json({ error: 'Failed to update entry' }, { status: 500 });
   }
 }
+
+export async function DELETE(_request: Request, { params }: { params: { id: string } }) {
+    try {
+          const userId = await getUserFromCookies();
+          if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+          const supabase = getSupabaseAdmin();
+          const { error } = await supabase
+            .from('journey_entries')
+            .delete()
+            .eq('id', params.id)
+            .eq('user_id', userId);
+          if (error) throw error;
+          return NextResponse.json({ success: true });
+    } catch (error) {
+          console.error('Journey [id] DELETE error:', error);
+          return NextResponse.json({ error: 'Failed to delete entry' }, { status: 500 });
+    }
+}
