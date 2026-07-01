@@ -60,26 +60,22 @@ export async function POST(request: Request) {
     const userId = await getUserFromCookies();
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const body = await request.json();
-    const { title, content, mood, struggle, lifeChallenge, spiritualNeed, outputType, tone, length, notes } = body;
+    const { mood, struggle, lifeChallenge, spiritualNeed, outputType, tone, length, content, title } = body;
     const entryTitle = title || (mood ? mood + ' \u2014 ' : 'Season \u2014 ') + new Date().toLocaleDateString();
 
     const supabase = getSupabaseAdmin();
-
-    
-    // Insert with only core columns first
     const insertData: Record<string, unknown> = {
       user_id: userId,
       title: entryTitle,
+      output_type: outputType || 'sermonette',
+      tone: tone || 'pastoral',
     };
-    if (content !== undefined) insertData.content = content;
-    if (mood !== undefined && mood !== null) insertData.mood = mood;
-    if (struggle !== undefined && struggle !== null) insertData.struggle = struggle;
-    if (lifeChallenge !== undefined && lifeChallenge !== null) insertData.life_challenge = lifeChallenge;
-    if (spiritualNeed !== undefined && spiritualNeed !== null) insertData.spiritual_need = spiritualNeed;
-    if (outputType !== undefined && outputType !== null) insertData.output_type = outputType;
-    if (tone !== undefined && tone !== null) insertData.tone = tone;
-    if (length !== undefined && length !== null) insertData.length = length;
-    if (notes !== undefined && notes !== null) insertData.notes = notes;
+    if (mood) insertData.mood = mood;
+    if (struggle) insertData.struggle = struggle;
+    if (lifeChallenge) insertData.challenge = lifeChallenge;
+    if (spiritualNeed) insertData.spiritual_need = spiritualNeed;
+    if (length) insertData.length = length;
+    if (content) insertData.generated_text = content;
 
     const { data, error } = await supabase
       .from('journey_entries')
