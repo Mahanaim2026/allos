@@ -45,8 +45,8 @@ return (
 
         {/* MARK DISPLAY */}
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-          <div style={{ background: '#1B3A57', borderRadius: '50%', width: 220, height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 24px 64px rgba(27,58,87,0.18)' }}>
-            <AllosLogo size={120} variant="dark" />
+          <div style={{ background: '#1B3A57', borderRadius: '50%', width: 160, height: 160, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 24px 64px rgba(27,58,87,0.18)' }}>
+            <AllosLogo size={80} variant="dark" />
           </div>
         </div>
       </section>
@@ -61,9 +61,9 @@ return (
           <p style={{ color: '#54677A', fontSize: '1.05rem', lineHeight: 1.75, margin: 0 }}>
             In John 14, Jesus promised <em>allos parakletos</em> â another Helper, another Comforter. The same Greek word He used to describe the Holy Spirit. Allos is built on that same promise: that you are not alone in your season, and that the Word of God speaks directly into where you are.
           </p>
-          <div style={{ marginTop: 28, fontFamily: "'Spectral', Georgia, serif", fontSize: '1.2rem', fontStyle: 'italic', color: '#6E9CC4' }}>
+          <blockquote style={{ marginTop: 28, borderLeft: '3px solid #C8943F', paddingLeft: 20, fontFamily: "'Spectral', Georgia, serif", fontSize: '1.2rem', fontStyle: 'italic', color: '#2C5573', textAlign: 'left' }}>
             &ldquo;I will not leave you as orphans; I will come to you.&rdquo;
-          </div>
+          </blockquote>
           <div style={{ marginTop: 8, fontSize: '0.78rem', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#6E9CC4' }}>John 14:18 &middot; WEB</div>
         </div>
       </section>
