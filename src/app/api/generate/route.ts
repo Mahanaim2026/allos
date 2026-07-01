@@ -103,7 +103,7 @@ Scripture references must be real WEB or KJV verses, quoted accurately in plain 
 
     return new Response(readable, {
       headers: {
-        'Content-Type': 'text/event-stream',
+        'Content-Type': 'text/event-stream; charset=utf-8',
         'Cache-Control': 'no-cache',
         'Connection': 'keep-alive',
       },
