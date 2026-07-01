@@ -62,9 +62,11 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const body = await request.json();
     const updates: Record<string, unknown> = {};
-    // notes column not in this table schema - skip
-    if (body.favorite !== undefined) updates.favorite = body.favorite;
+    // Fix: schema column is is_favourite, not favorite
+    if (body.favorite !== undefined) updates.is_favourite = body.favorite;
+    if (body.is_favourite !== undefined) updates.is_favourite = body.is_favourite;
     if (body.title !== undefined) updates.title = body.title;
+    if (body.notes !== undefined) updates.notes = body.notes;
     if (Object.keys(updates).length === 0) {
       return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 });
     }
@@ -85,19 +87,19 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 }
 
 export async function DELETE(_request: Request, { params }: { params: { id: string } }) {
-    try {
-          const userId = await getUserFromCookies();
-          if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-          const supabase = getSupabaseAdmin();
-          const { error } = await supabase
-            .from('journey_entries')
-            .delete()
-            .eq('id', params.id)
-            .eq('user_id', userId);
-          if (error) throw error;
-          return NextResponse.json({ success: true });
-    } catch (error) {
-          console.error('Journey [id] DELETE error:', error);
-          return NextResponse.json({ error: 'Failed to delete entry' }, { status: 500 });
-    }
+  try {
+    const userId = await getUserFromCookies();
+    if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const supabase = getSupabaseAdmin();
+    const { error } = await supabase
+      .from('journey_entries')
+      .delete()
+      .eq('id', params.id)
+      .eq('user_id', userId);
+    if (error) throw error;
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Journey [id] DELETE error:', error);
+    return NextResponse.json({ error: 'Failed to delete entry' }, { status: 500 });
+  }
 }
