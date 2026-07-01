@@ -1,40 +1,67 @@
+import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  );
+
+  const results: string[] = [];
+
+  // Step 1: Try to create exec_sql function
+  const createFnSql = `
+    CREATE OR REPLACE FUNCTION exec_sql(sql text)
+    RETURNS void
+    LANGUAGE plpgsql
+    SECURITY DEFINER
+    AS $$
+    BEGIN
+      EXECUTE sql;
+    END;
+    $$;
+  `;
+
+  // Use raw postgres via supabase-js v2 experimental sql tag
+  // Or use the rpc with an existing function
+
+  // Actually use the query method if available in the admin client
   try {
-    const projectRef = 'jppcqzmuujqlvabwylzw';
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-    
-    // Use Supabase Management API to run SQL
-    // This requires a Management API token (personal access token), not service role key
-    // Instead, use the REST API workaround: create missing columns via a raw query
-    
-    // Use the postgres RPC approach via the REST API with service role
-    const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    
-    const sqls = [
-      'ALTER TABLE journey_entries ADD COLUMN IF NOT EXISTS content text',
-      'ALTER TABLE journey_entries ADD COLUMN IF NOT EXISTS notes text',
-    ];
-    
-    const results = [];
-    for (const sql of sqls) {
-      // Use Supabase's pg endpoint
-      const res = await fetch(baseUrl + '/rest/v1/rpc/exec_sql', {
+    // @ts-ignore - direct sql execution
+    const { error: fnError } = await (supabase as any).rpc('query', { query: createFnSql });
+    results.push('create fn: ' + (fnError ? fnError.message : 'ok'));
+  } catch(e) {
+    results.push('create fn exception: ' + String(e));
+  }
+
+  // Step 2: Try ALTER TABLE via supabase schema editor API
+  const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+  
+  // Use Supabase's internal pg endpoint
+  const alterSqls = [
+    'ALTER TABLE journey_entries ADD COLUMN IF NOT EXISTS content text',
+    'ALTER TABLE journey_entries ADD COLUMN IF NOT EXISTS notes text',
+  ];
+  
+  for (const sql of alterSqls) {
+    try {
+      const res = await fetch(baseUrl + '/pg/query', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'apikey': serviceKey,
           'Authorization': 'Bearer ' + serviceKey,
+          'X-Connection-Encrypted': 'true',
         },
-        body: JSON.stringify({ sql }),
+        body: JSON.stringify({ query: sql }),
       });
-      const data = await res.json();
-      results.push({ sql: sql.substring(0, 60), status: res.status, data: JSON.stringify(data).substring(0,100) });
+      const d = await res.json();
+      results.push(sql.substring(0,50) + ': ' + res.status + ' ' + JSON.stringify(d).substring(0,100));
+    } catch(e) {
+      results.push(sql.substring(0,50) + ': error ' + String(e));
     }
-    
-    return NextResponse.json({ results });
-  } catch (err) {
-    return NextResponse.json({ error: String(err) }, { status: 500 });
   }
+
+  return NextResponse.json({ results });
 }
