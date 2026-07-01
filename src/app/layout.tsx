@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Spectral, Hanken_Grotesk } from 'next/font/google';
 import './globals.css';
 
@@ -17,8 +17,14 @@ const hanken = Hanken_Grotesk({
   display: 'swap',
 });
 
+export const viewport: Viewport = {
+  themeColor: '#0A2342',
+  width: 'device-width',
+  initialScale: 1,
+};
+
 export const metadata: Metadata = {
-  title: 'Allos — Scripture for the Season You\'re In',
+  title: 'Allos \u2014 Scripture for the Season You\'re In',
   description: 'Bring your heart before the Word. Receive Bible-grounded encouragement for the season you\'re walking through.',
   keywords: ['scripture', 'Bible', 'prayer', 'devotional', 'Christian', 'encouragement'],
   openGraph: {
@@ -30,15 +36,25 @@ export const metadata: Metadata = {
     icon: [
       { url: '/favicon.svg', type: 'image/svg+xml' },
     ],
+    apple: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+    ],
+    shortcut: '/favicon.svg',
   },
+  manifest: undefined,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${spectral.variable} ${hanken.variable}`}>
-      <body>
-        {children}
-      </body>
+      <head>
+        {/* Mobile web app meta */}
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Allos" />
+      </head>
+      <body>{children}</body>
     </html>
   );
 }
