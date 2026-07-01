@@ -58,50 +58,46 @@ export default function LoginPage() {
         <div style={{ background: '#FFFFFF', border: '1px solid #C8D8E8', borderRadius: 20, padding: '32px 28px', boxShadow: '0 4px 24px rgba(15,43,69,0.08)' }}>
 
           <button onClick={signInGoogle} disabled={loading}
-            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '13px 20px', border: '1.5px solid #C8D8E8', borderRadius: '100px', background: '#FFFFFF', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600, color: '#0F2B45', marginBottom: 20, minHeight: 48 }}>
-            <svg width="18" height="18" viewBox="0 0 24 24">
-              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-            </svg>
-            {loading ? 'Redirecting...' : 'Continue with Google'}
+            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '13px 16px', border: '1.5px solid #C8D8E8', borderRadius: 12, background: '#FFFFFF', color: '#0F2B45', fontSize: '0.9rem', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', marginBottom: 20 }}>
+            <svg width="18" height="18" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.909-2.258c-.806.54-1.837.86-3.047.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
+            Continue with Google
           </button>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-            <div style={{ flex: 1, height: 1, background: '#C8D8E8' }}/>
-            <span style={{ color: '#5C7A94', fontSize: '0.8rem' }}>or sign in with email</span>
-            <div style={{ flex: 1, height: 1, background: '#C8D8E8' }}/>
+            <div style={{ flex: 1, height: 1, background: '#E8EFF6' }} />
+            <span style={{ fontSize: '0.78rem', color: '#8FA8BF', letterSpacing: '0.06em' }}>OR</span>
+            <div style={{ flex: 1, height: 1, background: '#E8EFF6' }} />
           </div>
 
-          <form onSubmit={signInEmail} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <input type="email" placeholder="Email address" value={email} onChange={e => setEmail(e.target.value)} required style={inputStyle} />
-            <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required style={inputStyle} />
+          <form onSubmit={signInEmail}>
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#0F2B45', marginBottom: 6, letterSpacing: '0.02em' }}>Email</label>
+              <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" required style={inputStyle} />
+            </div>
+            <div style={{ marginBottom: 6 }}>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#0F2B45', marginBottom: 6, letterSpacing: '0.02em' }}>Password</label>
+              <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" required style={inputStyle} />
+            </div>
+            <div style={{ textAlign: 'right', marginBottom: 16 }}>
+              <Link href="/auth/reset" style={{ fontSize: '0.8rem', color: '#2B6CB0', textDecoration: 'none' }}>Forgot password?</Link>
+            </div>
+            {message && <p style={{ fontSize: '0.85rem', color: message.includes('Check') ? '#2A7A4F' : '#B83A2A', margin: '0 0 12px', padding: '10px 14px', background: message.includes('Check') ? '#F0FFF8' : '#FFF5F5', borderRadius: 8, border: `1px solid ${message.includes('Check') ? '#9AE6B4' : '#FEC7C0'}` }}>{message}</p>}
             <button type="submit" disabled={loading}
-              style={{ padding: '13px', background: '#0F2B45', color: '#FFFFFF', border: 'none', borderRadius: '100px', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer', minHeight: 48, fontFamily: 'inherit' }}>
+              style={{ width: '100%', background: '#0F2B45', color: '#FFFFFF', border: 'none', borderRadius: 100, padding: '14px', fontSize: '0.9rem', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: loading ? 0.7 : 1, marginBottom: 12 }}>
               {loading ? 'Signing in...' : 'Sign in'}
             </button>
           </form>
 
           <button onClick={magicLink} disabled={loading}
-            style={{ width: '100%', marginTop: 12, padding: '10px', background: 'transparent', color: '#4A7299', border: 'none', cursor: 'pointer', fontSize: '0.85rem', textDecoration: 'underline', fontFamily: 'inherit' }}>
-            Send a magic link instead
+            style={{ width: '100%', background: 'none', border: '1.5px solid #C8D8E8', borderRadius: 100, padding: '12px', fontSize: '0.85rem', color: '#3D5166', cursor: 'pointer', fontFamily: 'inherit', marginBottom: 20 }}>
+            Send magic link instead
           </button>
 
-          {message && (
-            <p style={{ marginTop: 14, fontSize: '0.85rem', color: message.includes('Check your email') ? '#1A3F5C' : '#B8832A', textAlign: 'center', lineHeight: 1.5 }}>
-              {message}
-            </p>
-          )}
+          <p style={{ textAlign: 'center', fontSize: '0.85rem', color: '#3D5166', margin: 0 }}>
+            New here?{' '}
+            <Link href="/auth/signup" style={{ color: '#2B6CB0', textDecoration: 'none', fontWeight: 500 }}>Create an account</Link>
+          </p>
         </div>
-
-        <p style={{ textAlign: 'center', marginTop: 20, color: '#3D5166', fontSize: '0.85rem' }}>
-          No account?{' '}
-          <Link href="/auth/signup" style={{ color: '#2B6CB0', fontWeight: 600, textDecoration: 'none' }}>Create one free</Link>
-        </p>
-        <p style={{ textAlign: 'center', marginTop: 8 }}>
-          <Link href="/app" style={{ color: '#5C7A94', fontSize: '0.8rem', textDecoration: 'none' }}>Continue as guest</Link>
-        </p>
       </div>
     </div>
   );
