@@ -9,7 +9,7 @@ const supabaseAdmin = createClient(
 );
 
 async function getUserIdFromRequest(request: Request): Promise<string | null> {
-  try {
+  try {h
     const cookieHeader = request.headers.get('cookie') || '';
     const match = cookieHeader.match(/sb-[^=]+-auth-token=([^;]+)/);
     if (!match) return null;
@@ -36,7 +36,7 @@ async function checkRateLimit(userId: string): Promise<{ allowed: boolean; reset
     .single();
 
   const plan = profile?.plan || 'free';
-  const limit = plan === 'pro' ? 50 : 5;
+  const limit = plan === 'pro' ? 10 : 5;
 
   const { count } = await supabaseAdmin
     .from('journey_entries')
