@@ -12,6 +12,24 @@ const FORMATS = ['Sermonette','Scripture exhortation','Prayer','Meditation','Dec
 const TONES = ['Gentle','Pastoral','Bold','Reflective','Prophetic'];
 const LENGTHS = ['Short','Medium','Deep'];
 
+const SURPRISE_SCRIPTURES = [
+  { verse: '"For I know the plans I have for you," declares the Lord, "plans to prosper you and not to harm you, plans to give you hope and a future."', ref: 'Jeremiah 29:11', reflection: 'Even in the unknown, God holds your tomorrow with perfect intention. Rest in His plans today.' },
+  { verse: '"Come to me, all you who are weary and burdened, and I will give you rest."', ref: 'Matthew 11:28', reflection: 'Whatever weight you carry right now, Jesus is your invitation to put it down. He is your rest.' },
+  { verse: '"I can do all this through him who gives me strength."', ref: 'Philippians 4:13', reflection: 'Not by your own power — but through His. Let this be your quiet confidence today.' },
+  { verse: '"The Lord is my shepherd, I lack nothing."', ref: 'Psalm 23:1', reflection: 'In His care, no true need goes unmet. You are seen, known, and provided for.' },
+  { verse: '"Be still, and know that I am God."', ref: 'Psalm 46:10', reflection: 'Stillness is not idleness — it is faith. In quietness today, let His presence be enough.' },
+  { verse: '"Cast all your anxiety on him because he cares for you."', ref: '1 Peter 5:7', reflection: 'God does not just tolerate your worries — He invites them. He cares for you personally.' },
+  { verse: '"The Lord your God is with you, the Mighty Warrior who saves. He will take great delight in you; in his love he will no longer rebuke you, but will rejoice over you with singing."', ref: 'Zephaniah 3:17', reflection: 'You are not merely tolerated by God — you are celebrated by Him. He sings over you.' },
+  { verse: '"He gives strength to the weary and increases the power of the weak."', ref: 'Isaiah 40:29', reflection: 'Your weakness is not disqualifying — it is the very place where His strength shines brightest.' },
+  { verse: '"Trust in the Lord with all your heart and lean not on your own understanding."', ref: 'Proverbs 3:5', reflection: 'Your understanding has limits. His wisdom has none. Lean into His leading today.' },
+  { verse: '"The Lord is close to the brokenhearted and saves those who are crushed in spirit."', ref: 'Psalm 34:18', reflection: 'He does not stand far off from your pain. He draws near to it — and to you.' },
+  { verse: '"For God so loved the world that he gave his one and only Son."', ref: 'John 3:16', reflection: 'The measure of God\'s love is the cross. You are worth everything to Him.' },
+  { verse: '"No, in all these things we are more than conquerors through him who loved us."', ref: 'Romans 8:37', reflection: 'Not just survivors — more than conquerors. The victory is already secured in Him.' },
+  { verse: '"And we know that in all things God works for the good of those who love him."', ref: 'Romans 8:28', reflection: 'Even the hard things are in His hands, being worked for your good. Nothing is wasted.' },
+  { verse: '"The steadfast love of the Lord never ceases; his mercies never come to an end; they are new every morning."', ref: 'Lamentations 3:22-23', reflection: 'Every morning is a fresh start with God. His mercies greet you before the day begins.' },
+  { verse: '"I have been crucified with Christ and I no longer live, but Christ lives in me."', ref: 'Galatians 2:20', reflection: 'The life you live is not alone. Christ lives in you — you carry His presence everywhere.' },
+  ];
+
 function renderOutput(text: string) {
 const clean = text.replace(/\*\*/g,'').replace(/\*/g,'').replace(/#{1,6}\s/g,'').replace(/^-\s/gm,'').trim();
 const paragraphs = clean.split(/\n\n+/);
@@ -127,6 +145,8 @@ const [userName, setUserName] = useState('');
 const [userEmail, setUserEmail] = useState('');
 const [rateLimitMsg, setRateLimitMsg] = useState('');
 const [unauthenticated, setUnauthenticated] = useState(false);
+    const [surpriseCard, setSurpriseCard] = React.useState<{verse:string;ref:string;reflection:string}|null>(null);
+    const [surpriseVisible, setSurpriseVisible] = React.useState(false);
 
 useEffect(() => {
 try {
@@ -281,6 +301,101 @@ React.createElement('span', { style: { fontFamily: "'Spectral', Georgia, serif",
 ),
 userName && React.createElement('span', { style: { fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '0.85rem', color: '#4A7299' } }, 'Hi, ' + userName)
 ),
+
+                    /* ── Surprise Me Section ── */
+                    React.createElement('div', { style: { textAlign: 'center', marginBottom: 28, marginTop: 4 } },
+                                          React.createElement('button', {
+                                                onClick: () => {
+                                                        const pick = SURPRISE_SCRIPTURES[Math.floor(Math.random() * SURPRISE_SCRIPTURES.length)];
+                                                        setSurpriseCard(pick);
+                                                        setSurpriseVisible(true);
+                                                },
+                                                style: {
+                                                        background: '#C0392B',
+                                                        color: '#FFFFFF',
+                                                        border: 'none',
+                                                        borderRadius: 100,
+                                                        padding: '12px 26px',
+                                                        fontFamily: 'Hanken Grotesk, sans-serif',
+                                                        fontWeight: 700,
+                                                        fontSize: '0.95rem',
+                                                        cursor: 'pointer',
+                                                        letterSpacing: '0.02em',
+                                                        boxShadow: '0 4px 14px rgba(192,57,43,0.35)',
+                                                        transition: 'all 0.18s ease',
+                                                }
+                                          }, '\u2728 Surprise Me'),
+                                          surpriseVisible && surpriseCard && React.createElement('div', {
+                                                style: {
+                                                        marginTop: 20,
+                                                        background: '#FFFFFF',
+                                                        borderRadius: 16,
+                                                        padding: '28px 24px',
+                                                        boxShadow: '0 2px 20px rgba(0,0,0,0.07)',
+                                                        borderLeft: '4px solid #C0392B',
+                                                        textAlign: 'left',
+                                                        position: 'relative',
+                                                }
+                                          },
+                                                                                                     React.createElement('button', {
+                                                                                                             onClick: () => setSurpriseVisible(false),
+                                                                                                             style: {
+                                                                                                                       position: 'absolute', top: 12, right: 14,
+                                                                                                                       background: 'none', border: 'none', cursor: 'pointer',
+                                                                                                                       fontSize: '1.1rem', color: '#999', lineHeight: 1,
+                                                                                                               }
+                                                                                                       }, '\u00d7'),
+                                                                                                     React.createElement('p', {
+                                                                                                             style: {
+                                                                                                                       fontFamily: "'Spectral', Georgia, serif",
+                                                                                                                       fontStyle: 'italic',
+                                                                                                                       fontSize: '1.05rem',
+                                                                                                                       color: '#1A3F5C',
+                                                                                                                       lineHeight: 1.7,
+                                                                                                                       margin: '0 0 8px',
+                                                                                                               }
+                                                                                                       }, surpriseCard.verse),
+                                                                                                     React.createElement('p', {
+                                                                                                             style: {
+                                                                                                                       fontFamily: 'Hanken Grotesk, sans-serif',
+                                                                                                                       fontWeight: 600,
+                                                                                                                       fontSize: '0.85rem',
+                                                                                                                       color: '#C0392B',
+                                                                                                                       margin: '0 0 16px',
+                                                                                                                       letterSpacing: '0.04em',
+                                                                                                               }
+                                                                                                       }, '\u2014 ' + surpriseCard.ref),
+                                                                                                     React.createElement('p', {
+                                                                                                             style: {
+                                                                                                                       fontFamily: 'Hanken Grotesk, sans-serif',
+                                                                                                                       fontSize: '0.92rem',
+                                                                                                                       color: '#4A7299',
+                                                                                                                       lineHeight: 1.6,
+                                                                                                                       margin: 0,
+                                                                                                                       borderTop: '1px solid #EEF2F6',
+                                                                                                                       paddingTop: 12,
+                                                                                                               }
+                                                                                                       }, surpriseCard.reflection),
+                                                                                                     React.createElement('button', {
+                                                                                                             onClick: () => {
+                                                                                                                       const pick = SURPRISE_SCRIPTURES[Math.floor(Math.random() * SURPRISE_SCRIPTURES.length)];
+                                                                                                                       setSurpriseCard(pick);
+                                                                                                               },
+                                                                                                             style: {
+                                                                                                                       marginTop: 14,
+                                                                                                                       background: 'none',
+                                                                                                                       border: '1.5px solid #C0392B',
+                                                                                                                       borderRadius: 100,
+                                                                                                                       padding: '7px 18px',
+                                                                                                                       fontFamily: 'Hanken Grotesk, sans-serif',
+                                                                                                                       fontWeight: 600,
+                                                                                                                       fontSize: '0.82rem',
+                                                                                                                       color: '#C0392B',
+                                                                                                                       cursor: 'pointer',
+                                                                                                               }
+                                                                                                       }, '\u21bb Another one')
+                                                                                                   )
+                                        ),
 React.createElement('div', { style: { marginBottom: 32 } },
 LABEL('How are you feeling?'),
 React.createElement('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: mood === 'Other' ? 12 : 0 } },
