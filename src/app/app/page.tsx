@@ -31,418 +31,449 @@ const SURPRISE_SCRIPTURES = [
   ];
 
 function renderOutput(text: string) {
-const clean = text.replace(/\*\*/g,'').replace(/\*/g,'').replace(/#{1,6}\s/g,'').replace(/^-\s/gm,'').trim();
-const paragraphs = clean.split(/\n\n+/);
-return (
-React.createElement('div', null,
-...paragraphs.map((para, i) => {
-const ls = para.split('\n');
-if (para.startsWith('"') || para.startsWith('\u201c') || (para.includes('(') && para.match(/\(\w[^)]+\d+:\d+/))) {
-return React.createElement('blockquote', { key: i, style: { borderLeft: '3px solid #B8832A', paddingLeft: '1rem', margin: '1.2em 0', fontFamily: "'Spectral', Georgia, serif", fontStyle: 'italic', color: '#1A3F5C', lineHeight: 1.7 } }, para);
-}
-if (ls.length > 2 && ls.every((l: string) => l.length < 80)) {
-return React.createElement('div', { key: i, style: { marginBottom: '1.4em', fontStyle: 'italic', color: '#1A3F5C' } },
-  ...ls.map((l: string, j: number) => React.createElement('div', { key: j, style: { lineHeight: 1.6 } }, l))
-);
-}
-return React.createElement('p', { key: i, style: { margin: '0 0 1.2em', color: '#0F2B45' } }, para);
-})
-)
-);
+    const clean = text.replace(/\*\*/g,'').replace(/\*/g,'').replace(/#{1,6}\s/g,'').replace(/^-\s/gm,'').trim();
+    const paragraphs = clean.split(/\n\n+/);
+    return (
+          React.createElement('div', null,
+                                    ...paragraphs.map((para, i) => {
+                                              const ls = para.split('\n');
+                                              if (para.startsWith('"') || para.startsWith('\u201c') || (para.includes('(') && para.match(/\(\w[^)]+\d+:\d+/))) {
+                                                          return React.createElement('blockquote', { key: i, style: { borderLeft: '3px solid #B8832A', paddingLeft: '1rem', margin: '1.2em 0', fontFamily: "'Spectral', Georgia, serif", fontStyle: 'italic', color: '#1A3F5C', lineHeight: 1.7 } }, para);
+                                              }
+                                              if (ls.length > 2 && ls.every((l: string) => l.length < 80)) {
+                                                          return React.createElement('div', { key: i, style: { marginBottom: '1.4em', fontStyle: 'italic', color: '#1A3F5C' } },
+                                                                                                 ...ls.map((l: string, j: number) => React.createElement('div', { key: j, style: { lineHeight: 1.6 } }, l))
+                                                                                               );
+                                              }
+                                              return React.createElement('p', { key: i, style: { margin: '0 0 1.2em', color: '#0F2B45' } }, para);
+                                    })
+                                  )
+        );
 }
 
 function Chip({ label, selected, onClick, small }: { label: string; selected: boolean; onClick: () => void; small?: boolean }) {
-const [hovered, setHovered] = React.useState(false);
-return React.createElement('button', {
-onClick,
-onMouseEnter: () => setHovered(true),
-onMouseLeave: () => setHovered(false),
-style: { padding: small ? '6px 14px' : '10px 18px', borderRadius: 100, border: selected ? '2px solid #0F2B45' : '1.5px solid #C8D8E8', background: selected ? '#0F2B45' : hovered ? '#F0F5FA' : '#FFFFFF', color: selected ? '#FFFFFF' : '#0F2B45', fontFamily: 'Hanken Grotesk, sans-serif', fontSize: small ? '0.82rem' : '0.9rem', fontWeight: selected ? 600 : 400, cursor: 'pointer', minHeight: 44, transition: 'all 0.18s ease', whiteSpace: 'nowrap' as const }
-}, label);
+    const [hovered, setHovered] = React.useState(false);
+    return React.createElement('button', {
+          onClick,
+          onMouseEnter: () => setHovered(true),
+          onMouseLeave: () => setHovered(false),
+          style: { padding: small ? '6px 14px' : '10px 18px', borderRadius: 100, border: selected ? '2px solid #0F2B45' : '1.5px solid #C8D8E8', background: selected ? '#0F2B45' : hovered ? '#F0F5FA' : '#FFFFFF', color: selected ? '#FFFFFF' : '#0F2B45', fontFamily: 'Hanken Grotesk, sans-serif', fontSize: small ? '0.82rem' : '0.9rem', fontWeight: selected ? 600 : 400, cursor: 'pointer', minHeight: 44, transition: 'all 0.18s ease', whiteSpace: 'nowrap' as const }
+    }, label);
 }
 
 function DotPulse() {
-const [v, setV] = React.useState(true);
-React.useEffect(() => { const t = setInterval(() => setV(p => !p), 600); return () => clearInterval(t); }, []);
-return React.createElement('div', { style: { width: 7, height: 7, borderRadius: '50%', background: '#0F2B45', opacity: 0.5, transform: `scale(${v ? 1 : 0})`, transition: 'transform 0.33s ease' } });
+    return React.createElement('span', { style: { display: 'inline-flex', gap: 5, alignItems: 'center' } },
+                                   ...[0,1,2].map(i => React.createElement('span', { key: i, style: { width: 7, height: 7, borderRadius: '50%', background: '#B8832A', display: 'inline-block', animation: 'pulse 1.2s ease-in-out infinite', animationDelay: i * 0.2 + 's' } }))
+                                 );
 }
-
-const WAITING_MESSAGES = [
-{ text: 'In quietness and trust is your strength.', ref: 'Isaiah 30:15' },
-{ text: 'The Lord your God is in your midst \u2014 He will quiet you with His love.', ref: 'Zephaniah 3:17' },
-{ text: 'Come to Me, all who are weary, and I will give you rest.', ref: 'Matthew 11:28' },
-{ text: 'Cast all your anxiety on Him, for He cares for you.', ref: '1 Peter 5:7' },
-{ text: 'The Word of God is living and active.', ref: 'Hebrews 4:12' },
-{ text: 'He restores my soul. He guides me in right paths.', ref: 'Psalm 23:3' },
-];
 
 function LoadingScreen() {
-const [msgIdx, setMsgIdx] = React.useState(0);
-const [visible, setVisible] = React.useState(true);
-React.useEffect(() => {
-const timer = setInterval(() => {
-setVisible(false);
-setTimeout(() => { setMsgIdx(i => (i + 1) % WAITING_MESSAGES.length); setVisible(true); }, 400);
-}, 3800);
-return () => clearInterval(timer);
-}, []);
-const msg = WAITING_MESSAGES[msgIdx];
-return React.createElement('div', { style: { textAlign: 'center', padding: '72px 24px' } },
-React.createElement('div', { style: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#0F2B45', borderRadius: '50%', width: 48, height: 48, marginBottom: 28 } },
-React.createElement(AllosLogo, { size: 32, variant: 'dark' })
-),
-React.createElement('p', { style: { fontFamily: "'Spectral', Georgia, serif", fontStyle: 'italic', fontSize: '1.2rem', color: '#0F2B45', lineHeight: 1.65, transition: 'opacity 0.5s ease', opacity: visible ? 1 : 0 } }, '\u201c', msg.text, '\u201d'),
-React.createElement('p', { style: { fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '0.82rem', color: '#B8832A', letterSpacing: '0.04em' } }, '\u2014 ', msg.ref),
-React.createElement('div', { style: { display: 'flex', justifyContent: 'center', gap: 8, marginTop: 36 } },
-[0,1,2].map(i => React.createElement(DotPulse, { key: i }))
-)
-);
+    return React.createElement('div', { style: { minHeight: '60vh', display: 'flex', flexDirection: 'column' as const, alignItems: 'center', justifyContent: 'center', gap: 16 } },
+                                   React.createElement(DotPulse),
+                                   React.createElement('p', { style: { fontFamily: 'Hanken Grotesk, sans-serif', color: '#6B8CA8', fontSize: '0.9rem', letterSpacing: '0.04em' } }, 'Preparing your word...')
+                                 );
 }
 
-function LABEL(s: string) {
-return React.createElement('div', { style: { fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase' as const, color: '#4A7299', marginBottom: 8 } }, s);
+function LABEL(text: string) {
+    return React.createElement('p', { style: { fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '0.78rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: '#6B8CA8', marginBottom: 10, marginTop: 0 } }, text);
 }
 
 function SignupPrompt() {
-return React.createElement('div', { style: { textAlign: 'center', padding: '64px 24px', maxWidth: 420, margin: '0 auto' } },
-React.createElement('div', { style: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#F0F5FA', borderRadius: '50%', width: 56, height: 56, marginBottom: 24 } },
-React.createElement('span', { style: { fontSize: 28 } }, '\u270F\uFE0F')
-),
-React.createElement('h2', { style: { fontFamily: "'Spectral', Georgia, serif", fontSize: '1.5rem', color: '#0F2B45', margin: '0 0 12px', fontWeight: 600 } }, 'Your passage is ready'),
-React.createElement('p', { style: { fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '0.95rem', color: '#4A7299', lineHeight: 1.6, margin: '0 0 32px' } },
-'Create a free account to receive your personalised scripture passage and save it to your journey.'
-),
-React.createElement(Link, { href: '/auth/signup', style: { display: 'inline-block', background: '#0F2B45', color: '#FFFFFF', fontFamily: 'Hanken Grotesk, sans-serif', fontWeight: 600, fontSize: '0.95rem', padding: '14px 32px', borderRadius: 100, textDecoration: 'none', marginBottom: 12 } },
-'Create free account \u2192'
-),
-React.createElement('div', null,
-React.createElement(Link, { href: '/auth/login', style: { fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '0.85rem', color: '#4A7299', textDecoration: 'underline' } },
-'Already have an account? Sign in'
-)
-)
-);
+    return React.createElement('div', { style: { textAlign: 'center', padding: '2.5rem 1.5rem', maxWidth: 420, margin: '0 auto' } },
+                                   React.createElement('div', { style: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 56, height: 56, borderRadius: '50%', background: '#F0F5FA', marginBottom: 16 } },
+                                                             React.createElement('span', { style: { fontSize: 24 } }, '\u270F\uFE0F')
+                                                           ),
+                                   React.createElement('h2', { style: { fontFamily: "'Spectral', Georgia, serif", fontSize: '1.5rem', color: '#0F2B45', marginBottom: 8, marginTop: 0 } }, 'Create your free account'),
+                                   React.createElement('p', { style: { fontFamily: 'Hanken Grotesk, sans-serif', color: '#4A6B85', fontSize: '0.95rem', lineHeight: 1.6, marginBottom: 28 } },
+                                                             'Sign up to receive your personalised scripture passage and save your journey.'
+                                                           ),
+                                   React.createElement(Link, { href: '/auth/signup', style: { display: 'inline-block', background: '#0F2B45', color: '#fff', fontFamily: 'Hanken Grotesk, sans-serif', fontWeight: 600, fontSize: '0.95rem', padding: '14px 32px', borderRadius: 100, textDecoration: 'none', marginBottom: 12 } },
+                                                             'Create free account \u2192'
+                                                           ),
+                                   React.createElement('div', null,
+                                                             React.createElement(Link, { href: '/auth/login', style: { fontFamily: 'Hanken Grotesk, sans-serif', color: '#6B8CA8', fontSize: '0.88rem', textDecoration: 'none' } },
+                                                                                         'Already have an account? Sign in'
+                                                                                       )
+                                                           )
+                                 );
 }
 
 export default function AppPage() {
-const [step, setStep] = useState(1);
-const [mood, setMood] = useState('');
-const [struggle, setStruggle] = useState('');
-const [life, setLife] = useState('');
-const [spirit, setSpirit] = useState('');
-const [format, setFormat] = useState('Prayer');
-const [tone, setTone] = useState('Gentle');
-const [length, setLength] = useState('Medium');
-const [customMood, setCustomMood] = useState('');
-const [customStruggle, setCustomStruggle] = useState('');
-const [customLife, setCustomLife] = useState('');
-const [customSpirit, setCustomSpirit] = useState('');
-const [result, setResult] = useState('');
-const [loading, setLoading] = useState(false);
-const [saved, setSaved] = useState(false);
-const [journeyCount, setJourneyCount] = useState<number | null>(null);
-const [copied, setCopied] = useState(false);
-const [userName, setUserName] = useState('');
-const [userEmail, setUserEmail] = useState('');
-const [rateLimitMsg, setRateLimitMsg] = useState('');
-const [unauthenticated, setUnauthenticated] = useState(false);
-    const [surpriseCard, setSurpriseCard] = React.useState<{verse:string;ref:string;reflection:string}|null>(null);
-    const [surpriseVisible, setSurpriseVisible] = React.useState(false);
+    const [mode, setMode] = useState<'home'|'journey'|'surprise'>('home');
+    const [step, setStep] = useState(1);
+    const [mood, setMood] = useState('');
+    const [struggle, setStruggle] = useState('');
+    const [life, setLife] = useState('');
+    const [spirit, setSpirit] = useState('');
+    const [format, setFormat] = useState('Prayer');
+    const [tone, setTone] = useState('Gentle');
+    const [length, setLength] = useState('Medium');
+    const [customMood, setCustomMood] = useState('');
+    const [customStruggle, setCustomStruggle] = useState('');
+    const [customLife, setCustomLife] = useState('');
+    const [customSpirit, setCustomSpirit] = useState('');
+    const [result, setResult] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [saved, setSaved] = useState(false);
+    const [rateLimitMsg, setRateLimitMsg] = useState('');
+    const [unauthenticated, setUnauthenticated] = useState(false);
+    const [userName, setUserName] = useState('');
+    const [userEmail, setUserEmail] = useState('');
+    const [journeyCount, setJourneyCount] = useState<number|null>(null);
+    const [surpriseCard, setSurpriseCard] = useState<{verse:string;ref:string;reflection:string}|null>(null);
+    const [surpriseLoading, setSurpriseLoading] = useState(false);
 
-useEffect(() => {
-try {
-const stored = localStorage.getItem('allos_prefs');
-if (stored) {
-const prefs = JSON.parse(stored);
-if (prefs.format && FORMATS.includes(prefs.format)) setFormat(prefs.format);
-if (prefs.tone && TONES.includes(prefs.tone)) setTone(prefs.tone);
-if (prefs.length && LENGTHS.includes(prefs.length)) setLength(prefs.length);
-}
-} catch {}
-}, []);
+  useEffect(() => {
+        try {
+                const stored = localStorage.getItem('allos_prefs');
+                if (stored) {
+                          const prefs = JSON.parse(stored);
+                          if (prefs.format && FORMATS.includes(prefs.format)) setFormat(prefs.format);
+                          if (prefs.tone && TONES.includes(prefs.tone)) setTone(prefs.tone);
+                          if (prefs.length && LENGTHS.includes(prefs.length)) setLength(prefs.length);
+                }
+        } catch {}
+  }, []);
 
-useEffect(() => {
-const supabase = createClient();
-supabase.auth.getUser().then(({ data: { user } }) => {
-if (user) {
-setUserName(user.user_metadata?.full_name || user.email?.split('@')[0] || '');
-setUserEmail(user.email || '');
-supabase.from('journey_entries').select('id', { count: 'exact', head: true }).eq('user_id', user.id).then(({ count }) => { if (count !== null) setJourneyCount(count); });
-}
-});
-}, []);
+  useEffect(() => {
+        const supabase = createClient();
+        supabase.auth.getUser().then(({ data: { user } }) => {
+                if (user) {
+                          setUserName(user.user_metadata?.full_name || user.email?.split('@')[0] || '');
+                          setUserEmail(user.email || '');
+                          supabase.from('journey_entries').select('id', { count: 'exact', head: true }).eq('user_id', user.id).then(({ count }) => {
+                                      if (count !== null) setJourneyCount(count);
+                          });
+                }
+        });
+  }, []);
 
-const handleGenerate = async () => {
-setLoading(true);
-setResult('');
-setSaved(false);
-setRateLimitMsg('');
-setUnauthenticated(false);
+  const handleGenerate = async () => {
+        setLoading(true);
+        setResult('');
+        setSaved(false);
+        setRateLimitMsg('');
+        setUnauthenticated(false);
 
-try {
-const resp = await fetch('/api/generate', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({
-mood: mood === 'Other' ? customMood : mood,
-struggle: struggle === 'Other' ? customStruggle : struggle,
-life: life === 'Other' ? customLife : life,
-spirit: spirit === 'Other' ? customSpirit : spirit,
-format, tone, length,
-}),
-});
+        try {
+                const resp = await fetch('/api/generate', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                                      mood: mood === 'Other' ? customMood : mood,
+                                      struggle: struggle === 'Other' ? customStruggle : struggle,
+                                      life: life === 'Other' ? customLife : life,
+                                      spirit: spirit === 'Other' ? customSpirit : spirit,
+                                      format, tone, length,
+                          }),
+                });
 
-if (resp.status === 401) {
-setUnauthenticated(true);
-setLoading(false);
-return;
-}
+          if (resp.status === 401) {
+                    setUnauthenticated(true);
+                    setLoading(false);
+                    return;
+          }
 
-if (resp.status === 429) {
-const data = await resp.json();
-const resetAt = data.resetAt ? new Date(data.resetAt) : null;
-const hoursLeft = resetAt ? Math.ceil((resetAt.getTime() - Date.now()) / 3600000) : 3;
-setRateLimitMsg('You have reached your session limit. Your next session opens in ' + hoursLeft + ' hour' + (hoursLeft !== 1 ? 's' : '') + '.');
-setLoading(false);
-return;
-}
+          if (resp.status === 429) {
+                    const data = await resp.json();
+                    const resetAt = data.resetAt ? new Date(data.resetAt) : null;
+                    const hoursLeft = resetAt ? Math.ceil((resetAt.getTime() - Date.now()) / 3600000) : null;
+                    setRateLimitMsg('You have reached your session limit. Your next session opens' + (hoursLeft ? ' in ' + hoursLeft + ' hour' + (hoursLeft !== 1 ? 's' : '') : ' soon') + '.');
+                    setLoading(false);
+                    return;
+          }
 
-if (!resp.ok || !resp.body) {
-setResult('Something went wrong. Please try again.');
-setLoading(false);
-return;
-}
+          if (!resp.ok || !resp.body) {
+                    setResult('Something went wrong. Please try again.');
+                    setLoading(false);
+                    return;
+          }
 
-const reader = resp.body.getReader();
-const decoder = new TextDecoder();
-let buffer = '';
-let fullText = '';
+          const reader = resp.body.getReader();
+                const decoder = new TextDecoder();
+                let fullText = '';
+                let buffer = '';
 
-while (true) {
-const { done, value } = await reader.read();
-if (done) break;
-buffer += decoder.decode(value, { stream: true });
-const parts = buffer.split('\n\n');
-buffer = parts.pop() || '';
-for (const part of parts) {
-if (!part.startsWith('data: ')) continue;
-const payload = part.slice(6).trim();
-if (payload === '[DONE]') break;
-try {
-const parsed = JSON.parse(payload);
-if (parsed.error) { setResult(r => r + '\n\n[Error: ' + parsed.error + ']'); break; }
-if (parsed.text) { fullText += parsed.text; setResult(fullText); }
-} catch {}
-}
-}
+          while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    buffer += decoder.decode(value, { stream: true });
+                    const parts = buffer.split('\n\n');
+                    buffer = parts.pop() || '';
+                    for (const part of parts) {
+                                const payload = part.replace(/^data:\s*/, '');
+                                if (payload === '[DONE]') break;
+                                try {
+                                              const parsed = JSON.parse(payload);
+                                              if (parsed.error) { setResult(r => r + '\n\n[Error: ' + parsed.error + ']'); }
+                                              if (parsed.text) { fullText += parsed.text; setResult(fullText); }
+                                } catch {}
+                    }
+          }
 
-if (fullText.trim()) {
-setJourneyCount(c => (c ?? 0) + 1);
-try { localStorage.setItem('allos_prefs', JSON.stringify({ format, tone, length })); } catch {}
-}
-} catch (err) {
-setResult('Connection error. Please check your internet and try again.');
-} finally {
-setLoading(false);
-}
-};
+          if (fullText.trim()) {
+                    setJourneyCount(c => (c ?? 0) + 1);
+                    try {
+                                localStorage.setItem('allos_prefs', JSON.stringify({ format, tone, length }));
+                    } catch (err) {}
+          }
+        } catch (err) {
+                setResult('Connection error. Please check your internet and try again.');
+        } finally {
+                setLoading(false);
+        }
+  };
 
-const resetAll = () => {
-setStep(1); setMood(''); setStruggle(''); setLife(''); setSpirit('');
-setResult(''); setSaved(false); setRateLimitMsg(''); setUnauthenticated(false);
-};
+  const handleSurpriseMe = () => {
+        setSurpriseLoading(true);
+        setTimeout(() => {
+                const pick = SURPRISE_SCRIPTURES[Math.floor(Math.random() * SURPRISE_SCRIPTURES.length)];
+                setSurpriseCard(pick);
+                setSurpriseLoading(false);
+                setMode('surprise');
+        }, 600);
+  };
 
-const handleCopy = async () => {
-try { await navigator.clipboard.writeText(result); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch {}
-};
+  const resetAll = () => {
+        setStep(1); setMood(''); setStruggle(''); setLife(''); setSpirit('');
+        setResult(''); setSaved(false); setRateLimitMsg(''); setUnauthenticated(false);
+        setMode('home'); setSurpriseCard(null);
+  };
 
-const handleSave = async () => { setSaved(true); setTimeout(() => setSaved(false), 2000); };
+  const handleCopy = () => { navigator.clipboard.writeText(result); };
+    const handleSave = () => { setSaved(true); };
 
-const canGenerate = !!(mood || customMood) && step >= 4;
+  const canGenerate = mood !== '' && !loading;
 
-if (loading) return React.createElement('main', { style: { minHeight: '100vh', background: '#F7F3EE', display: 'flex', alignItems: 'center', justifyContent: 'center' } }, React.createElement(LoadingScreen, null));
+  // CSS styles
+  const css = `
+      @keyframes pulse { 0%,100% { opacity:0.3; transform:scale(0.8); } 50% { opacity:1; transform:scale(1); } }
+          @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+              @keyframes spin { to { transform:rotate(360deg); } }
+                  * { box-sizing: border-box; }
+                      body { margin: 0; }
+                          .allos-main { min-height: 100vh; background: #F7F3EE; font-family: 'Hanken Grotesk', sans-serif; }
+                              .allos-inner { max-width: 680px; margin: 0 auto; padding: 0 20px 60px; }
+                                  .allos-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 0 32px; }
+                                      .allos-logo-wrap { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+                                          .allos-logo-title { font-family: 'Spectral', Georgia, serif; font-size: 1.2rem; color: #0F2B45; font-weight: 600; }
+                                              .allos-nav { display: flex; align-items: center; gap: 16px; }
+                                                  .allos-nav a { font-family: 'Hanken Grotesk', sans-serif; font-size: 0.85rem; color: #6B8CA8; text-decoration: none; }
+                                                      .allos-nav a:hover { color: #0F2B45; }
+                                                          .hero { text-align: center; padding: 24px 0 40px; }
+                                                              .hero-title { font-family: 'Spectral', Georgia, serif; font-size: clamp(1.9rem, 5vw, 2.6rem); color: #0F2B45; line-height: 1.25; margin: 0 0 12px; font-weight: 400; }
+                                                                  .hero-sub { font-size: 1rem; color: #6B8CA8; line-height: 1.6; margin: 0 auto 36px; max-width: 420px; }
+                                                                      .cta-row { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+                                                                          .btn-primary { display: inline-flex; align-items: center; gap: 8px; background: #0F2B45; color: #fff; font-family: 'Hanken Grotesk', sans-serif; font-weight: 600; font-size: 1rem; padding: 16px 30px; border-radius: 100px; border: none; cursor: pointer; text-decoration: none; transition: all 0.18s; letter-spacing: 0.01em; min-height: 52px; }
+                                                                              .btn-primary:hover { background: #1A3F5C; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(15,43,69,0.2); }
+                                                                                  .btn-surprise { display: inline-flex; align-items: center; gap: 8px; background: #C13B2A; color: #fff; font-family: 'Hanken Grotesk', sans-serif; font-weight: 600; font-size: 1rem; padding: 16px 30px; border-radius: 100px; border: none; cursor: pointer; transition: all 0.18s; letter-spacing: 0.01em; min-height: 52px; }
+                                                                                      .btn-surprise:hover { background: #A83220; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(193,59,42,0.25); }
+                                                                                          .btn-ghost { background: transparent; color: #6B8CA8; font-family: 'Hanken Grotesk', sans-serif; font-size: 0.88rem; border: 1.5px solid #C8D8E8; padding: 10px 20px; border-radius: 100px; cursor: pointer; transition: all 0.15s; }
+                                                                                              .btn-ghost:hover { border-color: #0F2B45; color: #0F2B45; }
+                                                                                                  .step-card { background: #fff; border-radius: 20px; padding: 32px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(15,43,69,0.06); animation: fadeIn 0.3s ease; }
+                                                                                                      .step-indicator { display: flex; align-items: center; gap: 8px; margin-bottom: 24px; }
+                                                                                                          .step-dot { width: 8px; height: 8px; border-radius: 50%; background: #C8D8E8; }
+                                                                                                              .step-dot.active { background: #0F2B45; }
+                                                                                                                  .step-dot.done { background: #B8832A; }
+                                                                                                                      .chip-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+                                                                                                                          .custom-input { width: 100%; padding: 12px 16px; border: 1.5px solid #C8D8E8; border-radius: 12px; font-family: 'Hanken Grotesk', sans-serif; font-size: 0.92rem; color: #0F2B45; background: #FAFCFE; outline: none; transition: border 0.15s; margin-top: 10px; }
+                                                                                                                              .custom-input:focus { border-color: #0F2B45; }
+                                                                                                                                  .step-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; gap: 10px; }
+                                                                                                                                      .step-nav-right { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+                                                                                                                                          .btn-next { background: #0F2B45; color: #fff; font-family: 'Hanken Grotesk', sans-serif; font-weight: 600; font-size: 0.92rem; padding: 12px 24px; border-radius: 100px; border: none; cursor: pointer; transition: all 0.15s; }
+                                                                                                                                              .btn-next:disabled { opacity: 0.4; cursor: not-allowed; }
+                                                                                                                                                  .btn-next:not(:disabled):hover { background: #1A3F5C; }
+                                                                                                                                                      .result-card { background: #fff; border-radius: 20px; padding: 32px; box-shadow: 0 1px 4px rgba(15,43,69,0.06); animation: fadeIn 0.4s ease; }
+                                                                                                                                                          .result-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 24px; padding-top: 20px; border-top: 1px solid #EEF3F8; }
+                                                                                                                                                              .surprise-card { background: #fff; border-radius: 20px; padding: 36px 32px; text-align: center; box-shadow: 0 1px 4px rgba(15,43,69,0.06); animation: fadeIn 0.4s ease; max-width: 560px; margin: 0 auto; }
+                                                                                                                                                                  .surprise-verse { font-family: 'Spectral', Georgia, serif; font-size: 1.2rem; font-style: italic; color: #1A3F5C; line-height: 1.7; margin: 0 0 8px; }
+                                                                                                                                                                      .surprise-ref { font-family: 'Hanken Grotesk', sans-serif; font-size: 0.82rem; font-weight: 700; color: #B8832A; letter-spacing: 0.08em; text-transform: uppercase; margin: 0 0 24px; }
+                                                                                                                                                                          .surprise-reflection { font-family: 'Hanken Grotesk', sans-serif; font-size: 0.95rem; color: #4A6B85; line-height: 1.7; margin: 0 0 28px; }
+                                                                                                                                                                              .surprise-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+                                                                                                                                                                                  .spinner { width: 36px; height: 36px; border: 3px solid #EEF3F8; border-top-color: #C13B2A; border-radius: 50%; animation: spin 0.7s linear infinite; margin: 60px auto; }
+                                                                                                                                                                                      @media (max-width: 480px) {
+                                                                                                                                                                                            .allos-inner { padding: 0 14px 48px; }
+                                                                                                                                                                                                  .step-card { padding: 22px 16px; }
+                                                                                                                                                                                                        .result-card { padding: 22px 16px; }
+                                                                                                                                                                                                              .surprise-card { padding: 28px 16px; }
+                                                                                                                                                                                                                    .cta-row { flex-direction: column; align-items: center; }
+                                                                                                                                                                                                                          .btn-primary, .btn-surprise { width: 100%; max-width: 320px; justify-content: center; }
+                                                                                                                                                                                                                                .allos-header { padding: 16px 0 24px; }
+                                                                                                                                                                                                                                    }
+                                                                                                                                                                                                                                      `;
 
-if (unauthenticated) return React.createElement('main', { style: { minHeight: '100vh', background: '#F7F3EE', display: 'flex', alignItems: 'center', justifyContent: 'center' } }, React.createElement(SignupPrompt, null));
+  // Header component
+  const header = React.createElement('header', { className: 'allos-header' },
+                                         React.createElement(Link, { href: '/', className: 'allos-logo-wrap' },
+                                                                   React.createElement(AllosLogo, { size: 28, variant: 'light' }),
+                                                                   React.createElement('span', { className: 'allos-logo-title' }, 'Allos')
+                                                                 ),
+                                         React.createElement('nav', { className: 'allos-nav' },
+                                                                   journeyCount !== null && React.createElement('span', { style: { fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '0.82rem', color: '#6B8CA8' } }, journeyCount + ' journey' + (journeyCount !== 1 ? 's' : '')),
+                                                                   React.createElement(Link, { href: '/feedback' }, 'Feedback'),
+                                                                   userName ? React.createElement('span', null, userName) : React.createElement(Link, { href: '/auth/login' }, 'Sign in')
+                                                                 )
+                                       );
 
-if (rateLimitMsg) return React.createElement('main', { style: { minHeight: '100vh', background: '#F7F3EE', display: 'flex', alignItems: 'center', justifyContent: 'center' } },
-React.createElement('div', { style: { textAlign: 'center', padding: '64px 24px', maxWidth: 420, margin: '0 auto' } },
-React.createElement('div', { style: { fontSize: 48, marginBottom: 24 } }, '\u231B'),
-React.createElement('h2', { style: { fontFamily: "'Spectral', Georgia, serif", fontSize: '1.5rem', color: '#0F2B45', margin: '0 0 12px' } }, 'Session limit reached'),
-React.createElement('p', { style: { fontFamily: 'Hanken Grotesk, sans-serif', color: '#4A7299', lineHeight: 1.6, margin: '0 0 28px' } }, rateLimitMsg),
-React.createElement('button', { onClick: resetAll, style: { background: '#0F2B45', color: '#fff', border: 'none', borderRadius: 100, padding: '12px 28px', fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '0.9rem', cursor: 'pointer' } }, 'Back to start')
-)
-);
+  // Home screen
+  const homeScreen = React.createElement('div', null,
+                                             React.createElement('div', { className: 'hero' },
+                                                                       React.createElement('h1', { className: 'hero-title' }, 'What does God have', React.createElement('br'), 'for you today?'),
+                                                                       React.createElement('p', { className: 'hero-sub' }, 'Receive a scripture passage crafted for your moment — or let the Spirit surprise you.'),
+                                                                       React.createElement('div', { className: 'cta-row' },
+                                                                                                   React.createElement('button', { className: 'btn-primary', onClick: () => setMode('journey') },
+                                                                                                                                 React.createElement('span', null, '\u270F\uFE0F'), ' Word for my situation'
+                                                                                                                               ),
+                                                                                                   React.createElement('button', { className: 'btn-surprise', onClick: handleSurpriseMe, disabled: surpriseLoading },
+                                                                                                                                 surpriseLoading ? React.createElement('span', { style: { width: 18, height: 18, border: '2px solid rgba(255,255,255,0.4)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.7s linear infinite' } }) : React.createElement('span', null, '\u2728'),
+                                                                                                                                 ' Surprise me'
+                                                                                                                               )
+                                                                                                 )
+                                                                     )
+                                           );
 
-if (result) return React.createElement('main', { style: { minHeight: '100vh', background: '#F7F3EE' } },
-React.createElement('div', { style: { maxWidth: 680, margin: '0 auto', padding: '48px 24px' } },
-React.createElement('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32, flexWrap: 'wrap', gap: 12 } },
-React.createElement(Link, { href: '/', style: { display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' } },
-React.createElement(AllosLogo, { size: 28, variant: 'light' }),
-React.createElement('span', { style: { fontFamily: "'Spectral', Georgia, serif", fontSize: '1.1rem', color: '#0F2B45', fontWeight: 600 } }, 'Allos')
-),
-React.createElement('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
-React.createElement('button', { onClick: handleCopy, style: { background: copied ? '#E8F4EE' : '#FFFFFF', color: copied ? '#1A6B3C' : '#0F2B45', border: '1.5px solid ' + (copied ? '#1A6B3C' : '#C8D8E8'), borderRadius: 100, padding: '8px 18px', fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '0.85rem', cursor: 'pointer' } }, copied ? 'Copied!' : 'Copy'),
-React.createElement('button', { onClick: handleSave, style: { background: saved ? '#E8F4EE' : '#FFFFFF', color: saved ? '#1A6B3C' : '#0F2B45', border: '1.5px solid ' + (saved ? '#1A6B3C' : '#C8D8E8'), borderRadius: 100, padding: '8px 18px', fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '0.85rem', cursor: 'pointer' } }, saved ? 'Saved!' : 'Save'),
-React.createElement('button', { onClick: resetAll, style: { background: '#0F2B45', color: '#FFFFFF', border: 'none', borderRadius: 100, padding: '8px 18px', fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '0.85rem', cursor: 'pointer' } }, 'New passage')
-)
-),
-React.createElement('div', { style: { background: '#FFFFFF', borderRadius: 16, padding: '40px 44px', boxShadow: '0 2px 20px rgba(15,43,69,0.07)', fontFamily: "'Spectral', Georgia, serif", fontSize: '1.05rem', lineHeight: 1.8 } },
-renderOutput(result)
-),
-journeyCount !== null && React.createElement('p', { style: { textAlign: 'center', fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '0.8rem', color: '#8AAABF', marginTop: 20 } }, journeyCount + ' passage' + (journeyCount !== 1 ? 's' : '') + ' in your journey')
-)
-);
+  // Step indicator
+  const stepDots = (current: number, total: number) => React.createElement('div', { className: 'step-indicator' },
+                                                                               ...Array.from({ length: total }, (_, i) =>
+                                                                                       React.createElement('div', { key: i, className: 'step-dot' + (i + 1 === current ? ' active' : i + 1 < current ? ' done' : '') })
+                                                                                                 )
+                                                                             );
 
-return React.createElement('main', { style: { minHeight: '100vh', background: '#F7F3EE' } },
-React.createElement('div', { style: { maxWidth: 700, margin: '0 auto', padding: '40px 24px 80px' } },
-React.createElement('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 40 } },
-React.createElement(Link, { href: '/', style: { display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' } },
-React.createElement(AllosLogo, { size: 28, variant: 'light' }),
-React.createElement('span', { style: { fontFamily: "'Spectral', Georgia, serif", fontSize: '1.1rem', color: '#0F2B45', fontWeight: 600 } }, 'Allos')
-),
-userName && React.createElement('span', { style: { fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '0.85rem', color: '#4A7299' } }, 'Hi, ' + userName)
-),
-
-                    /* ── Surprise Me Section ── */
-                    React.createElement('div', { style: { textAlign: 'center', marginBottom: 28, marginTop: 4 } },
-                                          React.createElement('button', {
-                                                onClick: () => {
-                                                        const pick = SURPRISE_SCRIPTURES[Math.floor(Math.random() * SURPRISE_SCRIPTURES.length)];
-                                                        setSurpriseCard(pick);
-                                                        setSurpriseVisible(true);
-                                                },
-                                                style: {
-                                                        background: '#C0392B',
-                                                        color: '#FFFFFF',
-                                                        border: 'none',
-                                                        borderRadius: 100,
-                                                        padding: '12px 26px',
-                                                        fontFamily: 'Hanken Grotesk, sans-serif',
-                                                        fontWeight: 700,
-                                                        fontSize: '0.95rem',
-                                                        cursor: 'pointer',
-                                                        letterSpacing: '0.02em',
-                                                        boxShadow: '0 4px 14px rgba(192,57,43,0.35)',
-                                                        transition: 'all 0.18s ease',
-                                                }
-                                          }, '\u2728 Surprise Me'),
-                                          surpriseVisible && surpriseCard && React.createElement('div', {
-                                                style: {
-                                                        marginTop: 20,
-                                                        background: '#FFFFFF',
-                                                        borderRadius: 16,
-                                                        padding: '28px 24px',
-                                                        boxShadow: '0 2px 20px rgba(0,0,0,0.07)',
-                                                        borderLeft: '4px solid #C0392B',
-                                                        textAlign: 'left',
-                                                        position: 'relative',
-                                                }
-                                          },
-                                                                                                     React.createElement('button', {
-                                                                                                             onClick: () => setSurpriseVisible(false),
-                                                                                                             style: {
-                                                                                                                       position: 'absolute', top: 12, right: 14,
-                                                                                                                       background: 'none', border: 'none', cursor: 'pointer',
-                                                                                                                       fontSize: '1.1rem', color: '#999', lineHeight: 1,
-                                                                                                               }
-                                                                                                       }, '\u00d7'),
-                                                                                                     React.createElement('p', {
-                                                                                                             style: {
-                                                                                                                       fontFamily: "'Spectral', Georgia, serif",
-                                                                                                                       fontStyle: 'italic',
-                                                                                                                       fontSize: '1.05rem',
-                                                                                                                       color: '#1A3F5C',
-                                                                                                                       lineHeight: 1.7,
-                                                                                                                       margin: '0 0 8px',
-                                                                                                               }
-                                                                                                       }, surpriseCard.verse),
-                                                                                                     React.createElement('p', {
-                                                                                                             style: {
-                                                                                                                       fontFamily: 'Hanken Grotesk, sans-serif',
-                                                                                                                       fontWeight: 600,
-                                                                                                                       fontSize: '0.85rem',
-                                                                                                                       color: '#C0392B',
-                                                                                                                       margin: '0 0 16px',
-                                                                                                                       letterSpacing: '0.04em',
-                                                                                                               }
-                                                                                                       }, '\u2014 ' + surpriseCard.ref),
-                                                                                                     React.createElement('p', {
-                                                                                                             style: {
-                                                                                                                       fontFamily: 'Hanken Grotesk, sans-serif',
-                                                                                                                       fontSize: '0.92rem',
-                                                                                                                       color: '#4A7299',
-                                                                                                                       lineHeight: 1.6,
-                                                                                                                       margin: 0,
-                                                                                                                       borderTop: '1px solid #EEF2F6',
-                                                                                                                       paddingTop: 12,
-                                                                                                               }
-                                                                                                       }, surpriseCard.reflection),
-                                                                                                     React.createElement('button', {
-                                                                                                             onClick: () => {
-                                                                                                                       const pick = SURPRISE_SCRIPTURES[Math.floor(Math.random() * SURPRISE_SCRIPTURES.length)];
-                                                                                                                       setSurpriseCard(pick);
-                                                                                                               },
-                                                                                                             style: {
-                                                                                                                       marginTop: 14,
-                                                                                                                       background: 'none',
-                                                                                                                       border: '1.5px solid #C0392B',
-                                                                                                                       borderRadius: 100,
-                                                                                                                       padding: '7px 18px',
-                                                                                                                       fontFamily: 'Hanken Grotesk, sans-serif',
-                                                                                                                       fontWeight: 600,
-                                                                                                                       fontSize: '0.82rem',
-                                                                                                                       color: '#C0392B',
-                                                                                                                       cursor: 'pointer',
-                                                                                                               }
-                                                                                                       }, '\u21bb Another one')
+  // Journey flow steps
+  const journeyStep1 = React.createElement('div', { className: 'step-card' },
+                                               stepDots(step, 4),
+                                               LABEL('How are you feeling?'),
+                                               React.createElement('div', { className: 'chip-grid' },
+                                                                         ...MOODS.map(m => React.createElement(Chip, { key: m, label: m, selected: mood === m, onClick: () => setMood(mood === m ? '' : m) })),
+                                                                         React.createElement(Chip, { key: 'other-mood', label: 'Other', selected: mood === 'Other', onClick: () => setMood(mood === 'Other' ? '' : 'Other') })
+                                                                       ),
+                                               mood === 'Other' && React.createElement('input', { className: 'custom-input', placeholder: 'Describe how you\'re feeling...', value: customMood, onChange: (e: React.ChangeEvent<HTMLInputElement>) => setCustomMood(e.target.value) }),
+                                               React.createElement('div', { className: 'step-nav' },
+                                                                         React.createElement('button', { className: 'btn-ghost', onClick: () => setMode('home') }, '\u2190 Back'),
+                                                                         React.createElement('div', { className: 'step-nav-right' },
+                                                                                                     React.createElement('button', { className: 'btn-ghost', onClick: () => { setMood(''); setStep(2); } }, 'Skip'),
+                                                                                                     React.createElement('button', { className: 'btn-next', disabled: mood === '', onClick: () => setStep(2) }, 'Next \u2192')
                                                                                                    )
-                                        ),
-React.createElement('div', { style: { marginBottom: 32 } },
-LABEL('How are you feeling?'),
-React.createElement('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: mood === 'Other' ? 12 : 0 } },
-[...MOODS, 'Other'].map(m => React.createElement(Chip, { key: m, label: m, selected: mood === m, onClick: () => { setMood(m); if (step < 2) setStep(2); } }))
-),
-mood === 'Other' && React.createElement('input', { type: 'text', placeholder: 'Describe how you feel...', value: customMood, onChange: (e: React.ChangeEvent<HTMLInputElement>) => setCustomMood(e.target.value), style: { width: '100%', padding: '10px 14px', borderRadius: 10, border: '1.5px solid #C8D8E8', fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '0.9rem', marginTop: 8, boxSizing: 'border-box' as const } })
-),
-step >= 2 && React.createElement('div', { style: { marginBottom: 32 } },
-LABEL('What are you wrestling with?'),
-React.createElement('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
-[...STRUGGLES, 'Other', 'Skip'].map(s => React.createElement(Chip, { key: s, label: s, selected: struggle === s, onClick: () => { setStruggle(s); if (step < 3) setStep(3); } }))
-),
-struggle === 'Other' && React.createElement('input', { type: 'text', placeholder: 'Describe your struggle...', value: customStruggle, onChange: (e: React.ChangeEvent<HTMLInputElement>) => setCustomStruggle(e.target.value), style: { width: '100%', padding: '10px 14px', borderRadius: 10, border: '1.5px solid #C8D8E8', fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '0.9rem', marginTop: 8, boxSizing: 'border-box' as const } })
-),
-step >= 3 && React.createElement('div', { style: { marginBottom: 32 } },
-LABEL('What life season are you in?'),
-React.createElement('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
-[...LIFE, 'Other', 'Skip'].map(l => React.createElement(Chip, { key: l, label: l, selected: life === l, onClick: () => { setLife(l); if (step < 4) setStep(4); } }))
-),
-life === 'Other' && React.createElement('input', { type: 'text', placeholder: 'Describe your season...', value: customLife, onChange: (e: React.ChangeEvent<HTMLInputElement>) => setCustomLife(e.target.value), style: { width: '100%', padding: '10px 14px', borderRadius: 10, border: '1.5px solid #C8D8E8', fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '0.9rem', marginTop: 8, boxSizing: 'border-box' as const } })
-),
-step >= 4 && React.createElement('div', { style: { marginBottom: 32 } },
-LABEL('What do you need from God?'),
-React.createElement('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
-[...SPIRIT, 'Other', 'Skip'].map(s => React.createElement(Chip, { key: s, label: s, selected: spirit === s, onClick: () => setSpirit(s) }))
-),
-spirit === 'Other' && React.createElement('input', { type: 'text', placeholder: 'What do you need?', value: customSpirit, onChange: (e: React.ChangeEvent<HTMLInputElement>) => setCustomSpirit(e.target.value), style: { width: '100%', padding: '10px 14px', borderRadius: 10, border: '1.5px solid #C8D8E8', fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '0.9rem', marginTop: 8, boxSizing: 'border-box' as const } })
-),
-step >= 4 && React.createElement('div', { style: { marginBottom: 40, borderTop: '1px solid #E0E8F0', paddingTop: 28 } },
-LABEL('Format'),
-React.createElement('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 } },
-FORMATS.map(f => React.createElement(Chip, { key: f, label: f, selected: format === f, small: true, onClick: () => setFormat(f) }))
-),
-LABEL('Tone'),
-React.createElement('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 } },
-TONES.map(t => React.createElement(Chip, { key: t, label: t, selected: tone === t, small: true, onClick: () => setTone(t) }))
-),
-LABEL('Length'),
-React.createElement('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
-LENGTHS.map(l => React.createElement(Chip, { key: l, label: l, selected: length === l, small: true, onClick: () => setLength(l) }))
-)
-),
-step >= 4 && React.createElement('button', {
-onClick: handleGenerate,
-disabled: !canGenerate,
-style: { width: '100%', padding: '16px 0', background: canGenerate ? '#0F2B45' : '#C8D8E8', color: canGenerate ? '#FFFFFF' : '#8AAABF', border: 'none', borderRadius: 100, fontFamily: 'Hanken Grotesk, sans-serif', fontWeight: 600, fontSize: '1rem', cursor: canGenerate ? 'pointer' : 'not-allowed', letterSpacing: '0.02em', transition: 'background 0.2s ease' }
-}, 'Receive my passage')
-)
-);
+                                                                       )
+                                             );
+
+  const journeyStep2 = React.createElement('div', { className: 'step-card' },
+                                               stepDots(step, 4),
+                                               LABEL('What are you struggling with?'),
+                                               React.createElement('div', { className: 'chip-grid' },
+                                                                         ...STRUGGLES.map(s => React.createElement(Chip, { key: s, label: s, selected: struggle === s, onClick: () => setStruggle(struggle === s ? '' : s) })),
+                                                                         React.createElement(Chip, { key: 'other-str', label: 'Other', selected: struggle === 'Other', onClick: () => setStruggle(struggle === 'Other' ? '' : 'Other') })
+                                                                       ),
+                                               struggle === 'Other' && React.createElement('input', { className: 'custom-input', placeholder: 'Describe your struggle...', value: customStruggle, onChange: (e: React.ChangeEvent<HTMLInputElement>) => setCustomStruggle(e.target.value) }),
+                                               React.createElement('div', { className: 'step-nav' },
+                                                                         React.createElement('button', { className: 'btn-ghost', onClick: () => setStep(1) }, '\u2190 Back'),
+                                                                         React.createElement('div', { className: 'step-nav-right' },
+                                                                                                     React.createElement('button', { className: 'btn-ghost', onClick: () => { setStruggle(''); setStep(3); } }, 'Skip'),
+                                                                                                     React.createElement('button', { className: 'btn-next', onClick: () => setStep(3) }, 'Next \u2192')
+                                                                                                   )
+                                                                       )
+                                             );
+
+  const journeyStep3 = React.createElement('div', { className: 'step-card' },
+                                               stepDots(step, 4),
+                                               LABEL('Life context'),
+                                               React.createElement('div', { className: 'chip-grid' },
+                                                                         ...LIFE.map(l => React.createElement(Chip, { key: l, label: l, selected: life === l, onClick: () => setLife(life === l ? '' : l) })),
+                                                                         React.createElement(Chip, { key: 'other-life', label: 'Other', selected: life === 'Other', onClick: () => setLife(life === 'Other' ? '' : 'Other') })
+                                                                       ),
+                                               life === 'Other' && React.createElement('input', { className: 'custom-input', placeholder: 'Describe your context...', value: customLife, onChange: (e: React.ChangeEvent<HTMLInputElement>) => setCustomLife(e.target.value) }),
+                                               React.createElement('div', { className: 'step-nav' },
+                                                                         React.createElement('button', { className: 'btn-ghost', onClick: () => setStep(2) }, '\u2190 Back'),
+                                                                         React.createElement('div', { className: 'step-nav-right' },
+                                                                                                     React.createElement('button', { className: 'btn-ghost', onClick: () => { setLife(''); setStep(4); } }, 'Skip'),
+                                                                                                     React.createElement('button', { className: 'btn-next', onClick: () => setStep(4) }, 'Next \u2192')
+                                                                                                   )
+                                                                       )
+                                             );
+
+  const journeyStep4 = React.createElement('div', null,
+                                               React.createElement('div', { className: 'step-card' },
+                                                                         stepDots(step, 4),
+                                                                         LABEL('What are you seeking from God?'),
+                                                                         React.createElement('div', { className: 'chip-grid' },
+                                                                                                     ...SPIRIT.map(s => React.createElement(Chip, { key: s, label: s, selected: spirit === s, onClick: () => setSpirit(spirit === s ? '' : s) })),
+                                                                                                     React.createElement(Chip, { key: 'other-sp', label: 'Other', selected: spirit === 'Other', onClick: () => setSpirit(spirit === 'Other' ? '' : 'Other') })
+                                                                                                   ),
+                                                                         spirit === 'Other' && React.createElement('input', { className: 'custom-input', placeholder: 'What are you seeking?', value: customSpirit, onChange: (e: React.ChangeEvent<HTMLInputElement>) => setCustomSpirit(e.target.value) })
+                                                                       ),
+                                               React.createElement('div', { className: 'step-card', style: { marginTop: 0 } },
+                                                                         LABEL('Format'),
+                                                                         React.createElement('div', { className: 'chip-grid' },
+                                                                                                     ...FORMATS.map(f => React.createElement(Chip, { key: f, label: f, selected: format === f, small: true, onClick: () => setFormat(f) }))
+                                                                                                   ),
+                                                                         React.createElement('div', { style: { marginTop: 20 } }, LABEL('Tone')),
+                                                                         React.createElement('div', { className: 'chip-grid' },
+                                                                                                     ...TONES.map(t => React.createElement(Chip, { key: t, label: t, selected: tone === t, small: true, onClick: () => setTone(t) }))
+                                                                                                   ),
+                                                                         React.createElement('div', { style: { marginTop: 20 } }, LABEL('Length')),
+                                                                         React.createElement('div', { className: 'chip-grid' },
+                                                                                                     ...LENGTHS.map(l => React.createElement(Chip, { key: l, label: l, selected: length === l, small: true, onClick: () => setLength(l) }))
+                                                                                                   ),
+                                                                         React.createElement('div', { className: 'step-nav' },
+                                                                                                     React.createElement('button', { className: 'btn-ghost', onClick: () => setStep(3) }, '\u2190 Back'),
+                                                                                                     React.createElement('div', { className: 'step-nav-right' },
+                                                                                                                                   React.createElement('button', { className: 'btn-next', style: { padding: '14px 28px', fontSize: '0.98rem' }, disabled: !canGenerate, onClick: handleGenerate }, 'Receive my word \u2192')
+                                                                                                                                 )
+                                                                                                   )
+                                                                       )
+                                             );
+
+  return React.createElement('main', { className: 'allos-main' },
+                                 React.createElement('style', null, css),
+                                 React.createElement('div', { className: 'allos-inner' },
+                                                           header,
+
+                                                           // Rate limit notice
+                                                           rateLimitMsg && React.createElement('div', { style: { background: '#FFF3E0', border: '1px solid #FFB74D', borderRadius: 12, padding: '14px 18px', marginBottom: 20, fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '0.9rem', color: '#7A4A00' } }, rateLimitMsg),
+
+                                                           // Home mode
+                                                           mode === 'home' && homeScreen,
+
+                                                           // Surprise mode
+                                                           mode === 'surprise' && React.createElement('div', null,
+                                                                                                              surpriseCard && React.createElement('div', { className: 'surprise-card' },
+                                                                                                                                                            React.createElement('div', { style: { marginBottom: 20 } },
+                                                                                                                                                                                            React.createElement('span', { style: { fontSize: 32 } }, '\u2728')
+                                                                                                                                                                                          ),
+                                                                                                                                                            React.createElement('blockquote', { className: 'surprise-verse' }, surpriseCard.verse),
+                                                                                                                                                            React.createElement('p', { className: 'surprise-ref' }, surpriseCard.ref),
+                                                                                                                                                            React.createElement('p', { className: 'surprise-reflection' }, surpriseCard.reflection),
+                                                                                                                                                            React.createElement('div', { className: 'surprise-actions' },
+                                                                                                                                                                                            React.createElement('button', { className: 'btn-surprise', onClick: handleSurpriseMe }, '\u2728 Another one'),
+                                                                                                                                                                                            React.createElement('button', { className: 'btn-primary', onClick: () => { setMode('journey'); setStep(1); } }, '\u270F\uFE0F Word for my situation'),
+                                                                                                                                                                                            React.createElement('button', { className: 'btn-ghost', onClick: resetAll }, 'Home')
+                                                                                                                                                                                          )
+                                                                                                                                                          )
+                                                                                                            ),
+
+                                                           // Journey mode
+                                                           mode === 'journey' && !loading && !result && !unauthenticated && (
+                                                                     step === 1 ? journeyStep1 :
+                                                                     step === 2 ? journeyStep2 :
+                                                                     step === 3 ? journeyStep3 :
+                                                                     journeyStep4
+                                                                   ),
+
+                                                           // Loading
+                                                           mode === 'journey' && loading && React.createElement(LoadingScreen),
+
+                                                           // Unauthenticated
+                                                           mode === 'journey' && unauthenticated && React.createElement(SignupPrompt),
+
+                                                           // Result
+                                                           mode === 'journey' && result && !loading && React.createElement('div', { className: 'result-card' },
+                                                                                                                                   renderOutput(result),
+                                                                                                                                   React.createElement('div', { className: 'result-actions' },
+                                                                                                                                                                 React.createElement('button', { className: 'btn-ghost', onClick: handleCopy }, 'Copy'),
+                                                                                                                                                                 React.createElement('button', { className: 'btn-ghost', onClick: handleSave }, saved ? 'Saved \u2713' : 'Save'),
+                                                                                                                                                                 React.createElement('button', { className: 'btn-ghost', onClick: resetAll }, 'Start again')
+                                                                                                                                                               )
+                                                                                                                                 )
+                                                         )
+                               );
 }
